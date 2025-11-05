@@ -36,6 +36,91 @@
     </div>
   </div>
 
+  <!-- Auth (hidden until the loader fires app:loaded) -->
+  <main id="auth" class="auth" hidden>
+    <section class="auth-card" aria-labelledby="authTitle">
+      <!-- Tabs -->
+      <div class="tabs" role="tablist" aria-label="Authentication">
+        <button class="tab is-active" role="tab" aria-selected="true" aria-controls="panel-signup" id="tab-signup">Sign up</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-signin" id="tab-signin">Sign in</button>
+      </div>
+
+      <h2 id="authTitle" class="sr-only">Authentication</h2>
+
+      <!-- Sign up -->
+      <form id="panel-signup" class="panel" role="tabpanel" aria-labelledby="tab-signup">
+        <div class="form-row">
+          <label for="su-email">Email</label>
+          <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@bookclub.com" required>
+        </div>
+
+        <div class="form-row">
+          <label for="su-password">Password</label>
+          <div class="input-with-btn">
+            <input id="su-password" type="password" autocomplete="new-password" placeholder="Create a password" required>
+            <button class="ghost-btn" type="button" data-toggle="su-password" aria-label="Show password">Show</button>
+          </div>
+          <!-- strength -->
+          <div class="strength" aria-hidden="true">
+            <div class="strength-fill" id="su-strength"></div>
+          </div>
+          <ul class="reqs" id="su-reqs" aria-live="polite">
+            <li data-rule="len">At least 8 characters</li>
+            <li data-rule="mix">Letters & a number</li>
+            <li data-rule="case">Upper & lower case</li>
+          </ul>
+        </div>
+
+        <div class="form-row">
+          <label for="su-confirm">Confirm password</label>
+          <div class="input-with-btn">
+            <input id="su-confirm" type="password" autocomplete="new-password" placeholder="Repeat your password" required>
+            <button class="ghost-btn" type="button" data-toggle="su-confirm" aria-label="Show password">Show</button>
+          </div>
+          <p class="hint" id="confirmHint" aria-live="polite"></p>
+        </div>
+
+        <label class="checkbox">
+          <input id="su-terms" type="checkbox" required>
+          <span>I agree to the terms and conditions</span>
+        </label>
+
+
+        <button class="primary-btn" type="submit" id="su-submit">Create account</button>
+        <p class="alt-action">Already a member? <button class="link" type="button" data-switch="signin" aria-controls="panel-signin">Sign in</button></p>
+        <div class="form-status" id="su-status" aria-live="polite"></div>
+      </form>
+
+      <!-- Sign in -->
+      <form id="panel-signin" class="panel is-hidden" role="tabpanel" aria-labelledby="tab-signin" hidden>
+        <div class="form-row">
+          <label for="si-email">Email</label>
+          <input id="si-email" type="email" inputmode="email" autocomplete="email" placeholder="you@bookclub.com" required>
+        </div>
+
+        <div class="form-row">
+          <label	for="si-password">Password</label>
+          <div class="input-with-btn">
+            <input id="si-password" type="password" autocomplete="current-password" placeholder="Your password" required>
+            <button class="ghost-btn" type="button" data-toggle="si-password" aria-label="Show password">Show</button>
+          </div>
+        </div>
+
+        <div class="form-row row-flex">
+          <label class="checkbox">
+            <input id="si-remember" type="checkbox">
+            <span>Remember me</span>
+          </label>
+          <a class="link" href="#" aria-disabled="true">Forgot?</a>
+        </div>
+
+        <button class="primary-btn" type="submit" id="si-submit">Sign in</button>
+        <p class="alt-action">New here? <button class="link" type="button" data-switch="signup" aria-controls="panel-signup">Create an account</button></p>
+        <div class="form-status" id="si-status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
   <div id="sparkles" class="sparkles" aria-hidden="true"></div>
 
   <noscript><div class="noscript">This site needs JavaScript to load.</div></noscript>
