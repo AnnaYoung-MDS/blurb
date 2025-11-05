@@ -1,239 +1,342 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blurb</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blurb</title>
 
-  <!-- font -->
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Nunito:wght@400;600&display=swap" rel="stylesheet" />
 
-  <!-- css -->
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body class="theme-butter">
-  <div class="page">
-    <div id="splash" class="splash" aria-labelledby="app-name">
-      <div class="card">
-        <div class="badge" aria-hidden="true">
-          <!-- logo -->
-          <svg class="brand-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M5.832 7.606c.39 0 .79 0 1.18.06c.667.038 1.324.19 1.94.45a.33.33 0 0 0 .33-.57a5.5 5.5 0 0 0-1.83-.87a4.5 4.5 0 0 0-1.73-.13a6.3 6.3 0 0 0-1.91.62a.3.3 0 0 0-.18.37a.3.3 0 0 0 .38.18a8 8 0 0 1 1.82-.11m3.679 2.529a4.26 4.26 0 0 0-2.669-1.1a5 5 0 0 0-.83.04a8 8 0 0 0-1.87.6a.29.29 0 0 0 .17.55a11 11 0 0 1 1.83-.1h1.17a4.4 4.4 0 0 1 1.85.49a.33.33 0 0 0 .504-.027a.33.33 0 0 0-.115-.493zm-2.619 1.42a3.5 3.5 0 0 0-.86 0a5.5 5.5 0 0 0-1.86.6a.29.29 0 0 0 .18.55a6.3 6.3 0 0 1 1.72-.1h.7q.348.028.69.1a6 6 0 0 1 1.55.61a.32.32 0 0 0 .45-.07a.32.32 0 0 0-.08-.46a5.2 5.2 0 0 0-1.68-1a5 5 0 0 0-.81-.23m8.638-5.899q.115.59.16 1.19c.14 1.67 0 3.38.29 4.999c0 0 .44.61.9.23q.324-.27.62-.57q.184-.246.33-.52q.203-.374.36-.77q.345.371.629.79s.53.7.57.74a.6.6 0 0 0 .33.2a.53.53 0 0 0 .64-.35q.096-.246.12-.51v-.91l-.1-2.659c-.37-3.54-.37-3.999-.61-4.489a1.45 1.45 0 0 0-.88-.74a2.3 2.3 0 0 0-.88-.11a7 7 0 0 0-1.1.12c-.1 0-2.139.47-2.329.59a.28.28 0 0 0-.1.39q.634 1.142 1.05 2.38m-.26-2.309l1.74-.37q.498-.03 1 0a1.4 1.4 0 0 1 .559.09a.68.68 0 0 1 .41.36c.11.377.16.768.15 1.16l.21 3.049v2.34a6 6 0 0 0-.45-.52a3.1 3.1 0 0 0-.76-.55a.57.57 0 0 0-.48 0a.52.52 0 0 0-.26.21q-.06.16-.1.33l-.15.4c-.08.19-.16.39-.25.58l-.14.26c-.17-1.28-.17-2.6-.35-3.89a9.5 9.5 0 0 0-.24-1.27a6 6 0 0 0-.38-1.07c-.17-.36-.37-.719-.58-1.069z"/>
-            <path fill="currentColor" d="M23.898 10.225c-.11-1-.28-2-.43-2.919a12.6 12.6 0 0 0-.46-2.12a1.78 1.78 0 0 0-.66-.94a3.2 3.2 0 0 0-1.19-.39a2 2 0 0 0-.21.001c-.65 0-.56.62 0 .73h.07c.306.056.599.171.86.34c.197.227.316.51.34.81c.12.62.13 1.33.18 1.769c.13.87.26 1.85.39 2.86s.23 1.899.26 2.848c.044.96-.01 1.921-.16 2.87a10 10 0 0 0-3.54-.51a15 15 0 0 0-3.678.58c-.38.107-.743.265-1.08.47q-.645.392-1.24.86l-.31.2c0-.88.08-2 .07-3.11v-1.51c0-.51-.08-1-.14-1.5a37 37 0 0 0-.61-3.458a.27.27 0 0 0-.35-.26a.28.28 0 0 0-.24.32c.08.92.09 2.15.14 3.469c0 .48 0 1 .08 1.48s.07 1 .12 1.49c.09 1.069.19 2.069.25 2.908c-.24-.17-.52-.37-.89-.59a9 9 0 0 0-1.189-.61a9 9 0 0 0-4.509-.66c-1.37.18-2.692.629-3.889 1.32q.157-1.305.13-2.619a19 19 0 0 0-.27-2.899l-.62-4.479c0-.2.11-.33.27-.45q.404-.279.87-.43a13.4 13.4 0 0 1 4.689-.87c1.607.02 3.194.36 4.669 1a.324.324 0 1 0 .27-.59a12.5 12.5 0 0 0-4.879-1.32a13.9 13.9 0 0 0-5.069.72a3.7 3.7 0 0 0-1.42.79a1.44 1.44 0 0 0-.51 1.31c0 .21.18 1.2.36 2.24c.15.86.32 1.739.45 2.269q.315 1.36.43 2.75c.07.949 0 3.128 0 3.198c-.04.403.056.807.27 1.15a1.45 1.45 0 0 0 1.07.65q.35.06.7 0c.44-.09.91-.29 1.31-.35a12 12 0 0 1 1.67-.07a8 8 0 0 1 1.619.18a3.53 3.53 0 0 1 2.3 1.32a4 4 0 0 0 1.069 1.07c.415.216.882.313 1.35.28a3.6 3.6 0 0 0 1.75-.44a12.5 12.5 0 0 0 1.829-1.61a2.2 2.2 0 0 1 .73-.44c.45-.181.92-.315 1.399-.4a8 8 0 0 1 1.47-.17q.741-.01 1.47.13c.09 0 .739.25.999.29a.51.51 0 0 0 .43-.11a2 2 0 0 0 .45-.84a35 35 0 0 0 .85-4.999a24 24 0 0 0-.09-3.009m-1.41 7.748q-.057.169-.15.32a2.8 2.8 0 0 0-.91-.21a7.4 7.4 0 0 0-1.64-.21a10 10 0 0 0-1.639.11a9.6 9.6 0 0 0-1.59.38c-.365.14-.703.343-1 .6a12.4 12.4 0 0 1-1.699 1.43c-.382.2-.808.3-1.24.29c-.89 0-1.1-.4-1.47-.85a3.9 3.9 0 0 0-1.319-1.13a5.5 5.5 0 0 0-1.71-.55a9.4 9.4 0 0 0-1.809-.1q-.902.025-1.79.19c-.41.08-.88.31-1.329.43q-.226.065-.46.06a.82.82 0 0 1-.63-.33a1.3 1.3 0 0 1-.21-.73a9.8 9.8 0 0 1 4-1.17a8.2 8.2 0 0 1 3.998.8q1.264.649 2.43 1.46c.182.092.386.13.59.11a1.94 1.94 0 0 0 .88-.34a8.7 8.7 0 0 1 2.219-1.44a14.5 14.5 0 0 1 3.429-.71a8.9 8.9 0 0 1 3.339.32c-.05.07-.2.99-.29 1.27"/>
-            <path fill="currentColor" d="M12.66 6.167q.578-.285 1.19-.48l.56-.23a.53.53 0 0 0-.21-1a2.3 2.3 0 0 0-1 .4c-.355.253-.668.56-.93.91a.29.29 0 0 0 0 .4a.28.28 0 0 0 .39 0"/>
-          </svg>
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="theme-butter">
+    <!-- Load -->
+    <div class="page">
+      <div id="splash" class="splash" aria-labelledby="app-name">
+        <div class="card">
+          <div class="badge" aria-hidden="true">
+            <!-- logo -->
+            <svg class="brand-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M5.832 7.606c.39 0 .79 0 1.18.06c.667.038 1.324.19 1.94.45a.33.33 0 0 0 .33-.57a5.5 5.5 0 0 0-1.83-.87a4.5 4.5 0 0 0-1.73-.13a6.3 6.3 0 0 0-1.91.62a.3.3 0 0 0-.18.37a.3.3 0 0 0 .38.18a8 8 0 0 1 1.82-.11m3.679 2.529a4.26 4.26 0 0 0-2.669-1.1a5 5 0 0 0-.83.04a8 8 0 0 0-1.87.6a.29.29 0 0 0 .17.55a11 11 0 0 1 1.83-.1h1.17a4.4 4.4 0 0 1 1.85.49a.33.33 0 0 0 .504-.027a.33.33 0 0 0-.115-.493zm-2.619 1.42a3.5 3.5 0 0 0-.86 0a5.5 5.5 0 0 0-1.86.6a.29.29 0 0 0 .18.55a6.3 6.3 0 0 1 1.72-.1h.7q.348.028.69.1a6 6 0 0 1 1.55.61a.32.32 0 0 0 .45-.07a.32.32 0 0 0-.08-.46a5.2 5.2 0 0 0-1.68-1a5 5 0 0 0-.81-.23m8.638-5.899q.115.59.16 1.19c.14 1.67 0 3.38.29 4.999c0 0 .44.61.9.23q.324-.27.62-.57q.184-.246.33-.52q.203-.374.36-.77q.345.371.629.79s.53.7.57.74a.6.6 0 0 0 .33.2a.53.53 0 0 0 .64-.35q.096-.246.12-.51v-.91l-.1-2.659c-.37-3.54-.37-3.999-.61-4.489a1.45 1.45 0 0 0-.88-.74a2.3 2.3 0 0 0-.88-.11a7 7 0 0 0-1.1.12c-.1 0-2.139.47-2.329.59a.28.28 0 0 0-.1.39q.634 1.142 1.05 2.38m-.26-2.309l1.74-.37q.498-.03 1 0a1.4 1.4 0 0 1 .559.09a.68.68 0 0 1 .41.36c.11.377.16.768.15 1.16l.21 3.049v2.34a6 6 0 0 0-.45-.52a3.1 3.1 0 0 0-.76-.55a.57.57 0 0 0-.48 0a.52.52 0 0 0-.26.21q-.06.16-.1.33l-.15.4c-.08.19-.16.39-.25.58l-.14.26c-.17-1.28-.17-2.6-.35-3.89a9.5 9.5 0 0 0-.24-1.27a6 6 0 0 0-.38-1.07c-.17-.36-.37-.719-.58-1.069z"/>
+              <path fill="currentColor" d="M23.898 10.225c-.11-1-.28-2-.43-2.919a12.6 12.6 0 0 0-.46-2.12a1.78 1.78 0 0 0-.66-.94a3.2 3.2 0 0 0-1.19-.39a2 2 0 0 0-.21.001c-.65 0-.56.62 0 .73h.07c.306.056.599.171.86.34c.197.227.316.51.34.81c.12.62.13 1.33.18 1.769c.13.87.26 1.85.39 2.86s.23 1.899.26 2.848c.044.96-.01 1.921-.16 2.87a10 10 0 0 0-3.54-.51a15 15 0 0 0-3.678.58c-.38.107-.743.265-1.08.47q-.645.392-1.24.86l-.31.2c0-.88.08-2 .07-3.11v-1.51c0-.51-.08-1-.14-1.5a37 37 0 0 0-.61-3.458a.27.27 0 0 0-.35-.26a.28.28 0 0 0-.24.32c.08.92.09 2.15.14 3.469c0 .48 0 1 .08 1.48s.07 1 .12 1.49c.09 1.069.19 2.069.25 2.908c-.24-.17-.52-.37-.89-.59a9 9 0 0 0-1.189-.61a9 9 0 0 0-4.509-.66c-1.37.18-2.692.629-3.889 1.32q.157-1.305.13-2.619a19 19 0 0 0-.27-2.899l-.62-4.479c0-.2.11-.33.27-.45q.404-.279.87-.43a13.4 13.4 0 0 1 4.689-.87c1.607.02 3.194.36 4.669 1a.324.324 0 1 0 .27-.59a12.5 12.5 0 0 0-4.879-1.32a13.9 13.9 0 0 0-5.069.72a3.7 3.7 0 0 0-1.42.79a1.44 1.44 0 0 0-.51 1.31c0 .21.18 1.2.36 2.24c.15.86.32 1.739.45 2.269q.315 1.36.43 2.75c.07.949 0 3.128 0 3.198c-.04.403.056.807.27 1.15a1.45 1.45 0 0 0 1.07.65q.35.06.7 0c.44-.09.91-.29 1.31-.35a12 12 0 0 1 1.67-.07a8 8 0 0 1 1.619.18a3.53 3.53 0 0 1 2.3 1.32a4 4 0 0 0 1.069 1.07c.415.216.882.313 1.35.28a3.6 3.6 0 0 0 1.75-.44a12.5 12.5 0 0 0 1.829-1.61a2.2 2.2 0 0 1 .73-.44c.45-.181.92-.315 1.399-.4a8 8 0 0 1 1.47-.17q.741-.01 1.47.13c.09 0 .739.25.999.29a.51.51 0 0 0 .43-.11a2 2 0 0 0 .45-.84a35 35 0 0 0 .85-4.999a24 24 0 0 0-.09-3.009m-1.41 7.748q-.057.169-.15.32a2.8 2.8 0 0 0-.91-.21a7.4 7.4 0 0 0-1.64-.21a10 10 0 0 0-1.639.11a9.6 9.6 0 0 0-1.59.38c-.365.14-.703.343-1 .6a12.4 12.4 0 0 1-1.699 1.43c-.382.2-.808.3-1.24.29c-.89 0-1.1-.4-1.47-.85a3.9 3.9 0 0 0-1.319-1.13a5.5 5.5 0 0 0-1.71-.55a9.4 9.4 0 0 0-1.809-.1q-.902.025-1.79.19c-.41.08-.88.31-1.329.43q-.226.065-.46.06a.82.82 0 0 1-.63-.33a1.3 1.3 0 0 1-.21-.73a9.8 9.8 0 0 1 4-1.17a8.2 8.2 0 0 1 3.998.8q1.264.649 2.43 1.46c.182.092.386.13.59.11a1.94 1.94 0 0 0 .88-.34a8.7 8.7 0 0 1 2.219-1.44a14.5 14.5 0 0 1 3.429-.71a8.9 8.9 0 0 1 3.339.32c-.05.07-.2.99-.29 1.27"/>
+              <path fill="currentColor" d="M12.66 6.167q.578-.285 1.19-.48l.56-.23a.53.53 0 0 0-.21-1a2.3 2.3 0 0 0-1 .4c-.355.253-.668.56-.93.91a.29.29 0 0 0 0 .4a.28.28 0 0 0 .39 0"/>
+            </svg>
+          </div>
+
+          <h1 id="app-name" class="title">Blurb</h1>
+          <p id="funLine" class="subtitle" aria-live="polite">Getting things ready…</p>
+
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading progress">
+            <div id="progressBar" class="bar-fill"></div>
+          </div>
+          <p class="percent"><span id="progressText">0%</span> complete</p>
         </div>
-
-        <h1 id="app-name" class="title">Blurb</h1>
-        <p class="subtitle" id="funLine" aria-live="polite">Getting things ready…</p>
-
-        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading progress">
-          <div id="progressBar" class="bar-fill"></div>
-        </div>
-        <p class="percent"><span id="progressText">0%</span> complete</p>
       </div>
     </div>
-  </div>
 
-  <main id="auth" class="auth" hidden>
-    <section class="auth-card" aria-labelledby="authTitle">
-      <div class="tabs" role="tablist" aria-label="Authentication">
-        <button class="tab is-active" role="tab" aria-selected="true" aria-controls="panel-signup" id="tab-signup">Sign up</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-signin" id="tab-signin">Sign in</button>
-      </div>
+    <!-- Auth -->
+    <main id="auth" class="auth" hidden>
+      <section class="auth-card" aria-labelledby="authTitle">
+        <h2 id="authTitle" class="sr-only">Authentication</h2>
 
-      <h2 id="authTitle" class="sr-only">Authentication</h2>
-
-      <!-- sign up -->
-      <form id="panel-signup" class="panel" role="tabpanel" aria-labelledby="tab-signup">
-        <div class="form-row">
-          <label for="su-username">Username</label>
-          <input id="su-username" type="text" autocomplete="username" placeholder="blurbfan123" minlength="3" maxlength="24" pattern="^[a-zA-Z0-9_.]+$" required>
-          <p class="hint" id="usernameHint" aria-live="polite"></p>
+        <div class="tabs" role="tablist" aria-label="Authentication">
+          <button id="tab-signup" class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="panel-signup">Sign up</button>
+          <button id="tab-signin" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-signin">Sign in</button>
         </div>
 
-        <div class="form-row">
-          <label for="su-email">Email</label>
-          <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@bookclub.com" required>
-        </div>
-
-        <div class="form-row">
-          <label for="su-password">Password</label>
-          <div class="input-with-btn">
-            <input id="su-password" type="password" autocomplete="new-password" placeholder="Create a password" required>
-            <button class="ghost-btn" type="button" data-toggle="su-password" aria-label="Show password">Show</button>
+        <!-- Sign up -->
+        <form id="panel-signup" class="panel" role="tabpanel" aria-labelledby="tab-signup">
+          <div class="form-row">
+            <label for="su-username">Username</label>
+            <input id="su-username" type="text" autocomplete="username" placeholder="blurbfan123" minlength="3" maxlength="24" pattern="^[a-zA-Z0-9_.]+$" required />
+            <p id="usernameHint" class="hint" aria-live="polite"></p>
           </div>
 
-          <div class="strength" aria-hidden="true">
-            <div class="strength-fill" id="su-strength"></div>
+          <div class="form-row">
+            <label for="su-email">Email</label>
+            <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@bookclub.com" required />
           </div>
 
-          <ul class="reqs" id="su-reqs" aria-live="polite">
-            <li data-rule="len">At least 8 characters</li>
-            <li data-rule="mix">Letters & a number</li>
-            <li data-rule="case">Upper & lower case</li>
-          </ul>
-        </div>
-
-        <div class="form-row">
-          <label for="su-confirm">Confirm password</label>
-          <div class="input-with-btn">
-            <input id="su-confirm" type="password" autocomplete="new-password" placeholder="Repeat your password" required>
-            <button class="ghost-btn" type="button" data-toggle="su-confirm" aria-label="Show password">Show</button>
-          </div>
-          <p class="hint" id="confirmHint" aria-live="polite"></p>
-        </div>
-
-        <button class="primary-btn" type="submit" id="su-submit">Create account</button>
-        <p class="alt-action">Already a member? <button class="link" type="button" data-switch="signin" aria-controls="panel-signin">Sign in</button></p>
-        <div class="form-status" id="su-status" aria-live="polite"></div>
-      </form>
-
-      <!-- sign in -->
-      <form id="panel-signin" class="panel is-hidden" role="tabpanel" aria-labelledby="tab-signin" hidden>
-        <div class="form-row">
-          <label for="si-email">Email</label>
-          <input id="si-email" type="email" inputmode="email" autocomplete="email" placeholder="you@bookclub.com" required>
-        </div>
-
-        <div class="form-row">
-          <label for="si-password">Password</label>
-          <div class="input-with-btn">
-            <input id="si-password" type="password" autocomplete="current-password" placeholder="Your password" required>
-            <button class="ghost-btn" type="button" data-toggle="si-password" aria-label="Show password">Show</button>
-          </div>
-        </div>
-
-        <div class="form-row row-flex">
-          <label class="checkbox">
-            <input id="si-remember" type="checkbox">
-            <span>Remember me</span>
-          </label>
-          <a class="link" href="#" aria-disabled="true">Forgot?</a>
-        </div>
-
-        <button class="primary-btn" type="submit" id="si-submit">Sign in</button>
-        <p class="alt-action">New here? <button class="link" type="button" data-switch="signup" aria-controls="panel-signup">Create an account</button></p>
-        <div class="form-status" id="si-status" aria-live="polite"></div>
-      </form>
-    </section>
-  </main>
-
-  <div id="sparkles" class="sparkles" aria-hidden="true"></div>
-
-  <!-- Preferences -->
-  <section id="panel-preferences" hidden class="panel is-hidden">
-    <!-- STEP 1: Hobbies (phone-card layout) -->
-    <div id="pref-step-hobbies" class="pref-step">
-      <div class="flow-progress" aria-label="Overall progress">
-  <div class="flow-meta">Step <span id="flowStep">2</span> of <span id="flowTotal">4</span></div>
-  <div class="flow-bar"><div class="flow-fill step-2"></div></div>
-</div>
-
-      <div class="pref-shell">
-        <div class="pref-gradient"></div>
-
-        <div class="pref-card">
-          <header class="pref-top">
-            <button id="prefsBack" class="icon-btn" aria-label="Back">←</button>
-            <div class="pref-headcopy">
-              <h2 class="pref-title">Hobbies</h2>
-              <p class="pref-sub">Choose at least 3 hobbies you enjoy. This helps us find better books for you.</p>
+          <div class="form-row">
+            <label for="su-password">Password</label>
+            <div class="input-with-btn">
+              <input id="su-password" type="password" autocomplete="new-password" placeholder="Create a password" required />
+              <button class="ghost-btn" type="button" data-toggle="su-password" aria-label="Show password">Show</button>
             </div>
-          </header>
 
-          <div class="pref-progress">
-          <span id="hobbyCount" class="pref-count">Selected: 0/3</span>
+            <div class="strength" aria-hidden="true">
+              <div id="su-strength" class="strength-fill"></div>
+            </div>
 
-          <div id="hobbyChoices" class="chip-group" data-max="8">
-            <button class="chip" data-value="gaming">Gaming</button>
-            <button class="chip" data-value="music">Music</button>
-            <button class="chip" data-value="art">Art</button>
-            <button class="chip" data-value="sports">Sports</button>
-            <button class="chip" data-value="fashion">Fashion</button>
-            <button class="chip" data-value="coding">Coding</button>
-            <button class="chip" data-value="animals">Animals</button>
-            <button class="chip" data-value="writing">Writing</button>
-            <button class="chip" data-value="travel">Travel</button>
-            <button class="chip" data-value="movies">Movies / TV Shows</button>
-            <button class="chip" data-value="photography">Photography</button>
-            <button class="chip" data-value="baking">Baking / Cooking</button>
-            <button class="chip" data-value="dance">Dance</button>
-            <button class="chip" data-value="fitness">Fitness</button>
-            <button class="chip" data-value="makeup">Beauty</button>
-            <button class="chip" data-value="nature">Nature</button>
-            <button class="chip" data-value="boardgames">Board Games</button>
-            <button class="chip" data-value="streaming">Social Media</button>
+            <ul id="su-reqs" class="reqs" aria-live="polite">
+              <li data-rule="len">At least 8 characters</li>
+              <li data-rule="mix">Letters &amp; a number</li>
+              <li data-rule="case">Upper &amp; lower case</li>
+            </ul>
           </div>
 
-          <div class="actions">
-            <button id="nextToGenres" class="btn btn-primary" disabled>Continue</button>
+          <div class="form-row">
+            <label for="su-confirm">Confirm password</label>
+            <div class="input-with-btn">
+              <input id="su-confirm" type="password" autocomplete="new-password" placeholder="Repeat your password" required />
+              <button class="ghost-btn" type="button" data-toggle="su-confirm" aria-label="Show password">Show</button>
+            </div>
+            <p id="confirmHint" class="hint" aria-live="polite"></p>
+          </div>
+
+          <button id="su-submit" class="primary-btn" type="submit">Create account</button>
+          <p class="alt-action">Already a member? <button class="link" type="button" data-switch="signin" aria-controls="panel-signin">Sign in</button></p>
+          <div id="su-status" class="form-status" aria-live="polite"></div>
+        </form>
+
+        <!-- Sign in -->
+        <form id="panel-signin" class="panel is-hidden" role="tabpanel" aria-labelledby="tab-signin" hidden>
+          <div class="form-row">
+            <label for="si-email">Email</label>
+            <input id="si-email" type="email" inputmode="email" autocomplete="email" placeholder="you@bookclub.com" required />
+          </div>
+
+          <div class="form-row">
+            <label for="si-password">Password</label>
+            <div class="input-with-btn">
+              <input id="si-password" type="password" autocomplete="current-password" placeholder="Your password" required />
+              <button class="ghost-btn" type="button" data-toggle="si-password" aria-label="Show password">Show</button>
+            </div>
+          </div>
+
+          <div class="form-row row-flex">
+            <label class="checkbox">
+              <input id="si-remember" type="checkbox" />
+              <span>Remember me</span>
+            </label>
+            <a class="link" href="#" aria-disabled="true">Forgot?</a>
+          </div>
+
+          <button id="si-submit" class="primary-btn" type="submit">Sign in</button>
+          <p class="alt-action">New here? <button class="link" type="button" data-switch="signup" aria-controls="panel-signup">Create an account</button></p>
+          <div id="si-status" class="form-status" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+
+    <!--Sparkles -->
+    <div id="sparkles" class="sparkles" aria-hidden="true"></div>
+
+    <!-- Preferences -->
+    <section id="panel-preferences" class="preferences is-hidden" hidden aria-labelledby="prefsTitle">
+      <h2 id="prefsTitle" class="sr-only">Preferences</h2>
+
+      <!-- STEP 1: Hobbies -->
+      <div id="pref-step-hobbies" class="pref-step">
+        <div class="flow-progress" aria-label="Overall progress">
+          <div class="flow-meta">Step <span id="flowStep">2</span> of <span id="flowTotal">4</span></div>
+          <div class="flow-bar"><div class="flow-fill step-2"></div></div>
+        </div>
+
+        <div class="pref-shell">
+          <div class="pref-gradient" aria-hidden="true"></div>
+
+          <div class="pref-card">
+            <header class="pref-top">
+              <button id="prefsBack" class="icon-btn" type="button" aria-label="Back">←</button>
+              <div class="pref-headcopy">
+                <h3 class="pref-title">Hobbies</h3>
+                <p class="pref-sub">Choose at least 3 hobbies you enjoy. This helps us find better books for you.</p>
+              </div>
+            </header>
+
+            <div class="pref-progress">
+              <span id="hobbyCount" class="pref-count">Selected: 0/3</span>
+              <div class="pill"><div id="hobbyProgress" class="pill-fill" style="width:0%"></div></div>
+            </div>
+
+            <div id="hobbyChoices" class="chip-group" data-max="8">
+              <button class="chip" type="button" data-value="gaming">Gaming</button>
+              <button class="chip" type="button" data-value="music">Music</button>
+              <button class="chip" type="button" data-value="art">Art</button>
+              <button class="chip" type="button" data-value="sports">Sports</button>
+              <button class="chip" type="button" data-value="fashion">Fashion</button>
+              <button class="chip" type="button" data-value="coding">Coding</button>
+              <button class="chip" type="button" data-value="animals">Animals</button>
+              <button class="chip" type="button" data-value="writing">Writing</button>
+              <button class="chip" type="button" data-value="travel">Travel</button>
+              <button class="chip" type="button" data-value="movies">Movies / TV Shows</button>
+              <button class="chip" type="button" data-value="photography">Photography</button>
+              <button class="chip" type="button" data-value="baking">Baking / Cooking</button>
+              <button class="chip" type="button" data-value="dance">Dance</button>
+              <button class="chip" type="button" data-value="fitness">Fitness</button>
+              <button class="chip" type="button" data-value="makeup">Beauty</button>
+              <button class="chip" type="button" data-value="nature">Nature</button>
+              <button class="chip" type="button" data-value="boardgames">Board Games</button>
+              <button class="chip" type="button" data-value="streaming">Social Media</button>
+            </div>
+
+            <div class="actions">
+              <button id="nextToGenres" class="btn btn-primary" type="button" disabled>Continue</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- STEP 2: Genres (mirrors Hobbies) -->
-<div id="pref-step-genres" class="pref-step is-hidden" hidden>
+      <!-- STEP 2: Genres -->
+      <div id="pref-step-genres" class="pref-step is-hidden">
+        <div class="flow-progress" aria-label="Overall progress">
+          <div class="flow-meta">Step 3 of 4</div>
+          <div class="flow-bar"><div class="flow-fill step-3"></div></div>
+        </div>
+
+        <div class="pref-shell">
+          <div class="pref-gradient" aria-hidden="true"></div>
+
+          <div class="pref-card">
+            <header class="pref-top">
+              <button id="backToHobbies" class="icon-btn" type="button" aria-label="Back">←</button>
+              <div class="pref-headcopy">
+                <h3 class="pref-title">Favourite genres</h3>
+                <p class="pref-sub">Pick at least 3 genres you love. We’ll tailor recommendations to your taste.</p>
+              </div>
+            </header>
+
+            <div class="pref-progress">
+              <span id="genreCount" class="pref-count">Selected: 0/3</span>
+              <div class="pill"><div id="genreProgress" class="pill-fill" style="width:0%"></div></div>
+            </div>
+
+            <div id="genreChoices" class="chip-group" data-max="9999">
+              <button class="chip" type="button" data-value="fantasy" title="Fantasy">Fantasy</button>
+              <button class="chip" type="button" data-value="romance" title="Romance">Romance</button>
+              <button class="chip" type="button" data-value="mystery" title="Mystery / Thriller">Mystery</button>
+              <button class="chip" type="button" data-value="dystopian" title="Dystopian">Dystopian</button>
+              <button class="chip" type="button" data-value="scifi" title="Science Fiction">Sci-Fi</button>
+              <button class="chip" type="button" data-value="graphic" title="Graphic Novels / Manga">Graphic Novels</button>
+              <button class="chip" type="button" data-value="horror" title="Horror">Horror</button>
+              <button class="chip" type="button" data-value="realistic" title="Realistic Fiction">Realistic Fiction</button>
+              <button class="chip" type="button" data-value="adventure" title="Adventure">Adventure</button>
+              <button class="chip" type="button" data-value="sports" title="Sports">Sports</button>
+              <button class="chip" type="button" data-value="contemporary-ya" title="Contemporary YA">Contemporary YA</button>
+              <button class="chip" type="button" data-value="paranormal" title="Paranormal">Paranormal</button>
+              <button class="chip" type="button" data-value="lgbtqia" title="LGBTQIA+">LGBTQIA+</button>
+              <button class="chip" type="button" data-value="humor" title="Humor">Humour</button>
+              <button class="chip" type="button" data-value="fanfiction" title="Fanfiction">Fanfiction</button>
+              <button class="chip" type="button" data-value="poetry" title="Poetry / Spoken Word">Poetry</button>
+            </div>
+
+            <div class="actions">
+              <button id="savePrefs" class="btn btn-primary" type="button" disabled>Continue</button>
+            </div>
+
+            <p id="prefsStatus" class="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+
+<!-- STEP 4: Avatars -->
+<div id="pref-step-avatars" class="pref-step">
   <div class="flow-progress" aria-label="Overall progress">
-    <div class="flow-meta">Step <span id="flowStep">3</span> of <span id="flowTotal">4</span></div>
-    <div class="flow-bar"><div class="flow-fill step-3"></div></div>
+    <div class="flow-meta">Step 4 of 4</div>
+    <div class="flow-bar"><div class="flow-fill step-4"></div></div>
   </div>
 
   <div class="pref-shell">
-    <div class="pref-gradient"></div>
+    <div class="pref-gradient" aria-hidden="true"></div>
 
-    <div class="pref-card">
-      <header class="pref-top">
-        <button id="backToHobbies" class="icon-btn" aria-label="Back">←</button>
-        <div class="pref-headcopy">
-          <h2 class="pref-title">Favourite genres</h2>
-          <p class="pref-sub">Pick at least 3 genres you love. We’ll tailor recommendations to your taste.</p>
+    <div class="pref-card avatar-card-wrap">
+      <!-- Hero row -->
+      <div class="avatar-hero">
+        <button id="backToGenres" class="icon-btn avatar-back" type="button" aria-label="Back">←</button>
+
+        <div class="hero-copy">
+          <h3 class="pref-title">Choose your avatar</h3>
+          <p class="pref-sub">Three are free. Others unlock with points.</p>
         </div>
-      </header>
 
+        <!-- Big preview (JS will update this) -->
+        <div id="avatarHeroEmoji" class="hero-emoji" aria-hidden="true">📘</div>
+
+        <div class="hero-actions">
+          <button id="finishOnboarding" class="btn btn-primary" type="button" disabled>Continue</button>
+        </div>
+      </div>
+
+      <!-- Progress hint -->
       <div class="pref-progress">
-        <span id="genreCount" class="pref-count">Selected: 0/3</span>
-        <div class="pill"><div id="genreProgress" class="pill-fill" style="width:0%"></div></div>
+        <span id="avatarHint" class="pref-count">Pick one avatar</span>
+        <div class="pill"><div id="avatarProgress" class="pill-fill" style="width:0%"></div></div>
       </div>
 
-      <div class="chip-group" id="genreChoices" data-max="9999">
-        <button class="chip" data-value="fantasy" title="Fantasy">Fantasy</button>
-        <button class="chip" data-value="romance" title="Romance">Romance</button>
-        <button class="chip" data-value="mystery" title="Mystery / Thriller">Mystery</button>
-        <button class="chip" data-value="dystopian" title="Dystopian">Dystopian</button>
-        <button class="chip" data-value="scifi" title="Science Fiction">Sci-Fi</button>
-        <button class="chip" data-value="graphic" title="Graphic Novels / Manga">Graphic Novels</button>
-        <button class="chip" data-value="horror" title="Horror">Horror</button>
-        <button class="chip" data-value="realistic" title="Realistic Fiction">Realistic Fiction</button>
-        <button class="chip" data-value="adventure" title="Adventure">Adventure</button>
-        <button class="chip" data-value="sports" title="Sports">Sports</button>
-        <button class="chip" data-value="contemporary-ya" title="Contemporary YA">Contemporary YA</button>
-        <button class="chip" data-value="paranormal" title="Paranormal">Paranormal</button>
-        <button class="chip" data-value="lgbtqia" title="LGBTQIA+">LGBTQIA+</button>
-        <button class="chip" data-value="humor" title="Humor">Humour</button>
-        <button class="chip" data-value="fanfiction" title="Fanfiction">Fanfiction</button>
-        <button class="chip" data-value="poetry" title="Poetry / Spoken Word">Poetry</button>
+      <!-- Rounded panel with 4×4 grid -->
+      <div class="avatar-panel">
+        <div id="avatarChoices" class="avatar-grid" data-max="1">
+          <!-- Free (1–3) -->
+          <button type="button" class="chip avatar-card" data-id="av-1" data-cost="0"   aria-pressed="false" title="Free">
+            <span class="emoji" aria-hidden="true">📘</span><span class="cost free">Free</span>
+          </button>
+          <button type="button" class="chip avatar-card" data-id="av-2" data-cost="0"   aria-pressed="false" title="Free">
+            <span class="emoji" aria-hidden="true">📕</span><span class="cost free">Free</span>
+          </button>
+          <button type="button" class="chip avatar-card" data-id="av-3" data-cost="0"   aria-pressed="false" title="Free">
+            <span class="emoji" aria-hidden="true">📗</span><span class="cost free">Free</span>
+          </button>
+
+          <!-- Locked (4–16) -->
+          <button type="button" class="chip avatar-card is-locked" data-id="av-4"  data-cost="40"  aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📙</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">40 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-5"  data-cost="60"  aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📒</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">60 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-6"  data-cost="80"  aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📓</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">80 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-7"  data-cost="100" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📔</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">100 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-8"  data-cost="120" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📚</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">120 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-9"  data-cost="140" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📖</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">140 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-10" data-cost="150" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">🔖</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">150 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-11" data-cost="160" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">🪶</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">160 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-12" data-cost="170" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📜</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">170 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-13" data-cost="180" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📚✨</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">180 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-14" data-cost="190" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📖✨</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">190 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-15" data-cost="200" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📚🔥</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">200 pts</span>
+          </button>
+          <button type="button" class="chip avatar-card is-locked" data-id="av-16" data-cost="220" aria-pressed="false" title="Locked">
+            <span class="emoji" aria-hidden="true">📖💫</span><span class="lock" aria-hidden="true">🔒</span><span class="cost">220 pts</span>
+          </button>
+        </div>
       </div>
 
-      <div class="actions">
-        <button id="savePrefs" class="btn btn-primary" disabled>Continue</button>
-      </div>
-
-      <p id="prefsStatus" class="status" aria-live="polite"></p>
+      <p id="avatarStatus" class="status" aria-live="polite"></p>
     </div>
   </div>
 </div>
+    </section>
 
+    <noscript>
+      <div class="noscript">This site needs JavaScript to load.</div>
+    </noscript>
 
-  <noscript>
-    <div class="noscript">This site needs JavaScript to load.</div>
-  </noscript>
-
-  <!-- firebase -->
-  <script type="module" src="firebase.js"></script>
-
-  <!-- js -->
-  <script src="app.js" defer></script>
-</body>
+    <!-- Scripts -->
+    <!-- Firebase -->
+    <script type="module" src="firebase.js"></script>
+    <!-- App JS -->
+    <script src="app.js" defer></script>
+  </body>
 </html>

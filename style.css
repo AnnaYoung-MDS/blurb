@@ -227,7 +227,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 .pref-progress { margin: 8px 2px 12px; }
 .pref-count { display: inline-block; font-weight: 900; font-size: .85rem; color: var(--muted); margin-bottom: 6px; }
 .pill { height: 12px; width: 100%; background: #f1f1f4; border: 1px solid var(--stroke); border-radius: 999px; overflow: hidden; }
-.pill-fill { height: 100%; width: 0%; background: var(--primary); transition: width .22s ease; }
+.pill-fill { height: 100%; width: 0%; background: var(--juice); transition: width .22s ease; }
 
 /* chips */
 .chip-group { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 10px 0 16px; }
@@ -301,10 +301,142 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
   animation: floatFall 700ms ease-out forwards;
   z-index: 9999;
 }
+
 @keyframes floatFall{
   0%   { transform: translate(0,0) scale(.9); opacity: 1; }
   70%  { transform: translate(var(--dx, 0px), 70px) scale(1.05); opacity: .95; }
   100% { transform: translate(var(--dx, 0px), 110px) scale(.95); opacity: 0; }
 }
 
+/* =========================================================
+   Avatar grid: force circle tiles (override global .chip)
+   ========================================================= */
+#pref-step-avatars .avatar-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
 
+#pref-step-avatars .avatar-hero {
+  display: grid;
+  grid-template-columns: 40px 1fr auto; /* back btn | text | continue btn */
+  align-items: center;
+  position: relative;
+}
+
+/* Center the emoji by making it span all columns */
+#pref-step-avatars .hero-emoji {
+  grid-column: 1 / -1;        /* spans full width */
+  justify-self: center;       /* horizontal center */
+  margin: 10px 0 4px;
+}
+
+/* Hard override the chip look only in the avatar grid */
+#pref-step-avatars .avatar-grid .chip.avatar-card {
+  /* nuke pill-row behavior */
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 9999px !important;
+
+  /* visual style */
+  border: 2px solid var(--bat) !important;
+  background: #fff !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06) !important;
+  cursor: pointer !important;
+  position: relative !important;
+
+  /* kill any leftover flex/text formatting from .chip */
+  line-height: 1 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+/* Emoji + labels */
+#pref-step-avatars .hero-emoji {
+  font-size: clamp(140px, 28vw, 220px); /* larger than before */
+  margin-block: 4px 6px;
+}
+
+#pref-step-avatars .avatar-grid .chip.avatar-card .emoji {
+  font-size: 28px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+#pref-step-avatars .avatar-grid .chip.avatar-card .cost {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  opacity: .8;
+}
+#pref-step-avatars .avatar-grid .chip.avatar-card .cost.free { opacity: .6; }
+
+#pref-step-avatars .avatar-grid .chip.avatar-card .lock {
+  position: absolute;
+  font-size: 22px;
+  color: var(--bat);
+  opacity: .9;
+  right: 8px;
+  top: 8px;
+  pointer-events: none;
+}
+
+/* Avatar hover glow */
+#pref-step-avatars .avatar-grid .chip.avatar-card:hover:not(.is-locked) {
+  box-shadow: 0 0 0 4px var(--bat), 0 0 18px var(--bat) !important; /* <-- add !important */
+  transform: translateY(-2px) !important;
+  border-color: var(--bat) !important;
+  z-index: 2;
+}
+
+/* Selected state glow */
+#pref-step-avatars .avatar-grid .chip.avatar-card.selected {
+  box-shadow: 0 0 0 5px var(--bat), 0 0 22px var(--bat) !important; /* <-- add !important */
+  border-color: var(--bat) !important;
+}
+
+
+/* Locked look */
+#pref-step-avatars .avatar-grid .chip.avatar-card.is-locked {
+  opacity: .75;
+}
+#pref-step-avatars .avatar-grid .chip.avatar-card.is-locked .emoji {
+  filter: grayscale(.2);
+}
+
+#pref-step-avatars .hero-emoji.animate {
+  animation: pop 250ms ease-out;
+}
+
+@keyframes pop {
+  0%   { transform: scale(.6); opacity: .4; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Remove any tick/check added by global .chip styles ONLY in Step 4 ===== */
+#pref-step-avatars .avatar-grid .chip.avatar-card.selected::after,
+#pref-step-avatars .avatar-grid .chip.avatar-card.selected::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  mask: none !important;
+  -webkit-mask: none !important;
+}
+
+/* Some kits add the tick as a background on the button itself */
+#pref-step-avatars .avatar-grid .chip.avatar-card.selected {
+  background-image: none !important;
+}
+
+
+/* Responsive: 3 columns on narrow screens */
+@media (max-width: 420px) {
+  #pref-step-avatars .avatar-grid { grid-template-columns: repeat(3, 1fr); }
+}
