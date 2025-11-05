@@ -21,6 +21,64 @@
     };
   };
 
+  let onboardingLocked = false;
+
+  // === Back arrow on Hobbies -> go back to Sign up ===
+  document.getElementById('prefsBack')?.addEventListener('click', () => {
+    // hide preferences
+    const prefs = document.getElementById('panel-preferences');
+    if (prefs) { prefs.hidden = true; prefs.classList.add('is-hidden'); }
+
+    // show auth
+    const auth = document.getElementById('auth');
+    if (auth) auth.hidden = false;
+
+    // activate Sign up tab
+    if (typeof activateTab === 'function') activateTab('signup');
+
+    // focus username for convenience
+    document.getElementById('su-username')?.focus();
+  });
+
+  // === Optional: derive 2/4 dynamically ===
+  (function setOverallStepProgress() {
+    const current = 2;   // this screen is step 2
+    const total   = 4;   // total steps in onboarding
+    const pct = Math.min(100, (current / Math.max(1, total)) * 100);
+
+    const stepEl = document.getElementById('flowStep');
+    const totalEl = document.getElementById('flowTotal');
+    const fillEl = document.getElementById('flowFill');
+
+    if (stepEl) stepEl.textContent = String(current);
+    if (totalEl) totalEl.textContent = String(total);
+    if (fillEl) fillEl.style.width = pct + '%';
+  })();
+
+  // --- Onboarding constants + emoji map ---
+  const MIN_HOBBIES = 3;
+  const MIN_GENRES  = 3; // NEW: minimum required for the Genres step
+
+  const HOBBY_EMOJI = {
+    gaming:"🎮", music:"🎵", art:"🎨", sports:"🏀", fashion:"🧢", coding:"💻",
+    animals:"🐾", writing:"✍️", travel:"✈️", movies:"🎬", photography:"📸",
+    baking:"🧁", skateboarding:"🛹", dance:"💃", fitness:"💪", makeup:"💄",
+    nature:"🌿", collecting:"🧩", boardgames:"🎲", streaming:"📱",
+  };
+
+  function popEmojiFrom(el, emoji="✨"){
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const d = document.createElement("div");
+    d.className = "float-emoji";
+    d.textContent = emoji;
+    d.style.left = `${r.left + r.width/2}px`;
+    d.style.top  = `${r.top  + r.height/2}px`;
+    d.style.setProperty("--dx", `${Math.round(Math.random()*40-20)}px`);
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 800);
+  }
+
   /* --------------------------------------------------
    * Splash Screen + Progress
    * -------------------------------------------------- */
@@ -142,21 +200,45 @@
   });
 
   /* --------------------------------------------------
-   * Show / Hide Password Buttons (robust – event delegation)
+   * Show / Hide Password Buttons (Safari-safe)
    * -------------------------------------------------- */
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-toggle]');
     if (!btn) return;
+
+    // Stop implicit form submission (Safari can be picky here)
+    e.preventDefault();
 
     const id = btn.getAttribute('data-toggle');
     const input = id ? document.getElementById(id) : null;
     if (!input) return;
 
     const isHidden = input.type === 'password';
-    input.type = isHidden ? 'text' : 'password';
+
+    // Preserve selection/caret (iOS Safari can drop it on type switch)
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
+    try {
+      input.type = isHidden ? 'text' : 'password';
+    } catch {
+      // Ultra-old Safari fallback: swap the node
+      const clone = input.cloneNode(true);
+      clone.type = isHidden ? 'text' : 'password';
+      input.parentNode.replaceChild(clone, input);
+    }
+
     btn.textContent = isHidden ? 'Hide' : 'Show';
     btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-    input.focus();
+
+    // Defer focus so iOS Safari doesn’t immediately blur it
+    setTimeout(() => {
+      const target = document.getElementById(id);
+      target?.focus();
+      if (start != null && end != null && target?.setSelectionRange) {
+        try { target.setSelectionRange(start, end); } catch {}
+      }
+    }, 0);
   });
 
   /* --------------------------------------------------
@@ -254,37 +336,41 @@
   on(suConfirm, 'input', validateConfirm);
 
   /* --------------------------------------------------
-   * Open Onboarding (Hobbies)
+   * Onboarding show/hide helpers
    * -------------------------------------------------- */
+  function showAuthCard() {
+    const auth = document.getElementById('auth');
+    const prefs = document.getElementById('panel-preferences');
+    if (auth) { auth.hidden = false; }
+    if (prefs) { prefs.hidden = true; prefs.classList.add('is-hidden'); }
+  }
+
   function openOnboardingHobbies() {
+    onboardingLocked = true; // ✅ Lock onboarding once opened
+
     const auth = document.getElementById('auth');
     const prefs = document.getElementById('panel-preferences');
     const stepperEls = document.querySelectorAll('.stepper .step');
     const step1 = document.getElementById('pref-step-hobbies');
     const step2 = document.getElementById('pref-step-genres');
 
-    // hide auth card
     if (auth) auth.hidden = true;
 
-    // show onboarding container
     if (prefs) {
       prefs.hidden = false;
       prefs.classList.remove('is-hidden');
     }
 
-    // reset stepper to step 1 (Hobbies)
     stepperEls.forEach((el, i) => el.classList.toggle('is-active', i === 0));
 
-    // show step 1, hide step 2
     if (step1) { step1.hidden = false; step1.classList.remove('is-hidden'); }
     if (step2) { step2.hidden = true;  step2.classList.add('is-hidden'); }
 
-    // optional: focus first chip
     prefs?.querySelector('#hobbyChoices .chip')?.focus();
   }
 
   /* --------------------------------------------------
-   * Sign Up Handler
+   * Sign Up Handler — show onboarding immediately
    * -------------------------------------------------- */
   const suEmail = $('#su-email');
   const suSubmit = $('#su-submit');
@@ -310,6 +396,9 @@
     suSubmit && (suSubmit.disabled = true);
     setText(suStatus, 'Creating your account…');
 
+    // 🚀 Immediately open onboarding (even while the network request runs)
+    openOnboardingHobbies();
+
     try {
       let user;
       if (window.FirebaseAPI?.signUp) {
@@ -318,10 +407,22 @@
         await new Promise((r) => setTimeout(r, 900));
         user = { email };
       }
+      // Optionally update status somewhere persistent if you like
       setText(suStatus, `Welcome, ${user.email ?? 'reader'}!`);
-      openOnboardingHobbies(); // jump to Hobbies after successful sign-up
+      // already on onboarding
     } catch (err) {
-      setText(suStatus, err?.message ?? 'Could not create account.');
+      // If sign-up fails, bounce the user back to the auth card with the error
+      function showAuthCard() {
+        if (onboardingLocked) return; // ✅ Don't leave onboarding once it's locked
+        const auth = document.getElementById('auth');
+        const prefs = document.getElementById('panel-preferences');
+        if (auth) auth.hidden = false;
+        if (prefs) {
+          prefs.hidden = true;
+          prefs.classList.add('is-hidden');
+        }
+      }
+
     } finally {
       suSubmit && (suSubmit.disabled = false);
     }
@@ -377,10 +478,54 @@
     if (step2El) { step2El.hidden = n !== 2; step2El.classList.toggle('is-hidden', n !== 2); }
   }
 
-  function initChipGroup(group) {
+  // NEW: helper to ensure the step has a counter + progress UI identical to Hobbies
+  function ensureProgressUI(stepRoot, countId, progressId, min) {
+    if (!stepRoot) return;
+    let progress = stepRoot.querySelector('.pref-progress');
+    if (!progress) {
+      progress = document.createElement('div');
+      progress.className = 'pref-progress';
+      progress.innerHTML = `
+        <span id="${countId}" class="pref-count">Selected: 0/${min}</span>
+        <div class="pill"><div id="${progressId}" class="pill-fill" style="width:0%"></div></div>
+      `;
+      const chips = stepRoot.querySelector('.chip-group');
+      if (chips && chips.parentNode) chips.parentNode.insertBefore(progress, chips);
+      else stepRoot.prepend(progress);
+    } else {
+      const label = progress.querySelector(`#${countId}`);
+      if (label) label.textContent = `Selected: 0/${min}`;
+    }
+  }
+
+  // UPDATED: options-based initChipGroup with unlimited selection + labeled counter
+  function initChipGroup(group, opts = {}) {
     if (!group) return { values: [], max: 0 };
-    const max = parseInt(group.dataset.max || '5', 10);
+
+    // Support unlimited selections via opts.max === Infinity
+    const rawMax = opts.max === Infinity ? Infinity : (group.dataset.max || String(opts.max ?? 5));
+    const max = rawMax === Infinity ? Infinity : parseInt(String(rawMax), 10);
+    const min = parseInt(String(opts.min ?? 0), 10);
     const values = new Set();
+
+    const countEl = opts.countEl || null;   // e.g. #hobbyCount or #genreCount
+    const fillEl  = opts.fillEl  || null;   // e.g. #hobbyProgress or #genreProgress
+    const nextBtn = opts.nextBtn || null;   // e.g. #nextToGenres or #savePrefs
+
+    function updateProgress() {
+      // Label shows "Selected: X/min" and increments live
+      if (countEl) setText(countEl, `Selected: ${values.size}/${min}`);
+
+      // Fill toward the minimum; cap at 100%
+      if (fillEl && min > 0) {
+        const pct = Math.min(100, (values.size / min) * 100);
+        fillEl.style.width = `${pct}%`;
+      }
+
+      // Gate the CTA button until min is reached
+      if (nextBtn) nextBtn.disabled = values.size < min;
+    }
+    updateProgress();
 
     group.addEventListener('click', (e) => {
       const btn = e.target.closest('.chip');
@@ -391,29 +536,68 @@
       if (btn.classList.contains('selected')) {
         btn.classList.remove('selected');
         values.delete(v);
-      } else if (values.size < max) {
+      } else if (max === Infinity || values.size < max) {
         btn.classList.add('selected');
         values.add(v);
+        if (group.id === 'hobbyChoices') popEmojiFrom(btn, HOBBY_EMOJI[v] || "✨");
       }
-
-      if (group.id === 'hobbyChoices') {
-        nextToGenres && (nextToGenres.disabled = values.size === 0);
-      } else if (group.id === 'genreChoices') {
-        savePrefs && (savePrefs.disabled = values.size === 0);
-      }
+      updateProgress();
     });
 
-    return { get values() { return Array.from(values); } };
+    return { get values() { return Array.from(values); }, min, max };
   }
 
-  const hobbies = initChipGroup($('#hobbyChoices'));
-  const genres = initChipGroup($('#genreChoices'));
+  // Ensure Continue starts disabled
+  if (nextToGenres) nextToGenres.disabled = true;
 
-  on(nextToGenres, 'click', () => setStep(2));
-  on(backToHobbies, 'click', () => setStep(1));
+  // Hobbies chip group: require at least 3 (unchanged except max Infinity)
+  const hobbies = initChipGroup($('#hobbyChoices'), {
+    min: MIN_HOBBIES,
+    max: Infinity,                 // allow selecting as many as they like
+    countEl: $('#hobbyCount'),     // shows "Selected: X/3"
+    fillEl: $('#hobbyProgress'),
+    nextBtn: $('#nextToGenres'),
+  });
+
+  // NEW: When Continue is clicked with ≥3 hobbies, show and init Genres like Hobbies
+  on($('#nextToGenres'), 'click', () => {
+    if (hobbies.values.length >= MIN_HOBBIES) {
+      ensureProgressUI(step2El, 'genreCount', 'genreProgress', MIN_GENRES); // NEW
+      if (!window.__genresInitDone) { // NEW
+        window.__genresInitDone = true; // NEW
+        if ($('#savePrefs')) $('#savePrefs').disabled = true; // NEW: gate Save until min reached
+        window.__genresGroup = initChipGroup($('#genreChoices'), { // NEW
+          min: MIN_GENRES,            // NEW: require 3 genres
+          max: Infinity,              // NEW: unlimited selections
+          countEl: $('#genreCount'),  // NEW: Selected: X/3
+          fillEl: $('#genreProgress'),// NEW: progress fill toward 3
+          nextBtn: $('#savePrefs'),   // NEW: enable Save when X ≥ 3
+        });
+      }
+      setStep(2); // switch to Genres
+    }
+  });
+
+  // NEW (optional safety): if the user lands on step 2 directly
+  (function initGenresJustInCase(){
+    ensureProgressUI(step2El, 'genreCount', 'genreProgress', MIN_GENRES);
+    if (!window.__genresInitDone) {
+      window.__genresInitDone = true;
+      if ($('#savePrefs')) $('#savePrefs').disabled = true;
+      window.__genresGroup = initChipGroup($('#genreChoices'), {
+        min: MIN_GENRES,
+        max: Infinity,
+        countEl: $('#genreCount'),
+        fillEl: $('#genreProgress'),
+        nextBtn: $('#savePrefs'),
+      });
+    }
+  })();
+
+ on(backToHobbies, 'click', () => setStep(1));
 
   on(savePrefs, 'click', async () => {
-    const data = { hobbies: hobbies.values, genres: genres.values };
+    const data = { hobbies: hobbies.values, genres: (window.__genresGroup?.values ?? []) };
     savePrefs && (savePrefs.disabled = true);
     setText(prefsStatus, 'Saving your preferences…');
 
