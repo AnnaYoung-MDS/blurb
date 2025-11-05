@@ -440,3 +440,67 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 @media (max-width: 420px) {
   #pref-step-avatars .avatar-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ===== Sticky header ===== */
+.has-header { padding-top: 64px; } /* keep content clear of the header */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--cream);
+  border-bottom: 1px solid var(--stroke);
+  backdrop-filter: saturate(1.1) blur(6px);
+}
+
+.site-header__inner {
+  height: 64px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* brand (logo left) */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: var(--primary);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--stroke);
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+/* reuse your brand-svg rules */
+.brand-mark .brand-svg { width: 70%; height: 70%; color: var(--on-primary); }
+
+.brand-name { font-size: 1.05rem; }
+
+/* optional right-side nav */
+.site-nav { margin-left: auto; display: flex; gap: 14px; }
+.site-nav a {
+  font-weight: 800;
+  text-decoration: none;
+  color: var(--muted);
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--text-dark);
+  border-color: var(--stroke);
+  outline: none;
+}

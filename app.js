@@ -1,27 +1,28 @@
 (() => {
   "use strict";
-  /* ==================================================
-   * Utilities
-   * ==================================================*/
+
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const on = (el, ev, fn, opts) => el && el.addEventListener(ev, fn, opts);
+  const on = (el, ev, fn, opts) => {
+    if (!el) return;
+    if (Array.isArray(el) || (el instanceof NodeList)) {
+      el.forEach((n) => n && n.addEventListener(ev, fn, opts));
+    } else {
+      el.addEventListener(ev, fn, opts);
+    }
+  };
   const setText = (el, text) => { if (el) el.textContent = text ?? ""; };
 
-  // Safe string helpers
   const toStr = (v) => (v == null ? "" : String(v));
   const safeTrim = (v) => toStr(v).trim();
   const val = (el) => safeTrim(el?.value);
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
-  // Debounce
   const debounce = (fn, ms = 250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
 
-  /* ==================================================
-   * Constants & State
-   * ==================================================*/
   const MIN_HOBBIES = 3;
   const MIN_GENRES  = 3;
-  let onboardingLocked = false; // prevents leaving onboarding once started
+  let onboardingLocked = false;
 
   const HOBBY_EMOJI = {
     gaming:"🎮", music:"🎵", art:"🎨", sports:"🏀", fashion:"🧢", coding:"💻",
@@ -36,9 +37,6 @@
     paranormal:"🔮", lgbtqia:"🏳️‍🌈", humor:"😄", fanfiction:"✍️", poetry:"🪶",
   };
 
-  /* ==================================================
-   * Element cache (only what we touch often)
-   * ==================================================*/
   const els = {
     splash:        $("#splash"),
     funLine:       $("#funLine"),
@@ -86,7 +84,6 @@
     genreCount:    $("#genreCount"),
     genreProgress: $("#genreProgress"),
 
-    // Avatars step
     avatarChoices: $("#avatarChoices"),
     avatarHint:    $("#avatarHint"),
     avatarProgress:$("#avatarProgress"),
@@ -94,9 +91,6 @@
     avatarStatus:  $("#avatarStatus"),
   };
 
-  /* ==================================================
-   * Visual flourish helpers
-   * ==================================================*/
   function popEmojiFrom(el, emoji = "✨") {
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -110,9 +104,7 @@
     setTimeout(() => d.remove(), 800);
   }
 
-  /* ==================================================
-   * Splash / Loader
-   * ==================================================*/
+  /* Loading */
   const funPhrases = [
     'Opening the library doors… 📚',
     'Skimming the preface…',
@@ -128,7 +120,7 @@
   const rotatePhrase = () => setText(els.funLine, funPhrases[(++phraseIdx) % funPhrases.length]);
 
   function setProgress(pct) {
-    const p = Math.max(0, Math.min(100, pct));
+    const p = clamp(pct, 0, 100);
     if (els.progressBar) els.progressBar.style.width = `${p}%`;
     setText(els.progressText, `${Math.round(p)}%`);
     if (p >= 100) {
@@ -151,7 +143,6 @@
     setTimeout(tick, 420);
   })();
 
-  // Progress header (2/4 etc.)
   (function setOverallStepProgress() {
     const current = 2, total = 4;
     const pct = Math.min(100, (current / Math.max(1, total)) * 100);
@@ -161,9 +152,7 @@
     if (fillEl) fillEl.style.width = pct + '%';
   })();
 
-  /* ==================================================
-   * Sparkles effect
-   * ==================================================*/
+  /* Sparkles effect */
   function runSparklesOnce() {
     const layer = els.sparkles;
     if (!layer) return;
@@ -184,26 +173,29 @@
     setTimeout(() => { clearInterval(interval); setTimeout(() => layer.replaceChildren(), 1500); }, 3000);
   }
 
-  /* ==================================================
-   * Tabs (Sign up / Sign in)
-   * ==================================================*/
+  /* Sign up/Sign in */
+  function showPanel(panelToShow, panelToHide, tabToSelect, tabToDeselect) {
+    if (panelToShow)  panelToShow.hidden = false;
+    if (panelToHide)  panelToHide.hidden = true;
+    tabToSelect?.classList.add('is-active');
+    tabToDeselect?.classList.remove('is-active');
+    tabToSelect?.setAttribute('aria-selected', 'true');
+    tabToDeselect?.setAttribute('aria-selected', 'false');
+  }
+
   function activateTab(which) {
     const isSignup = which === 'signup';
-    els.tabSignup?.classList.toggle('is-active', isSignup);
-    els.tabSignin?.classList.toggle('is-active', !isSignup);
-    els.tabSignup?.setAttribute('aria-selected', String(isSignup));
-    els.tabSignin?.setAttribute('aria-selected', String(!isSignup));
-    if (els.panelSignup) { els.panelSignup.hidden = !isSignup; els.panelSignup.classList.toggle('is-hidden', !isSignup); }
-    if (els.panelSignin) { els.panelSignin.hidden = isSignup;  els.panelSignin.classList.toggle('is-hidden',  isSignup); }
+    showPanel(isSignup ? els.panelSignup : els.panelSignin,
+              isSignup ? els.panelSignin : els.panelSignup,
+              isSignup ? els.tabSignup   : els.tabSignin,
+              isSignup ? els.tabSignin   : els.tabSignup);
   }
 
   on(els.tabSignup, 'click', () => activateTab('signup'));
   on(els.tabSignin, 'click', () => activateTab('signin'));
   $$('button[data-switch]').forEach(btn => on(btn, 'click', () => activateTab(btn.getAttribute('data-switch'))));
 
-  /* ==================================================
-   * Show/Hide password (delegated)
-   * ==================================================*/
+  /* Show/Hide password */
   on(document, 'click', (e) => {
     const btn = e.target.closest('button[data-toggle]');
     if (!btn) return;
@@ -222,6 +214,7 @@
     }
     btn.textContent = isHidden ? 'Hide' : 'Show';
     btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    btn.setAttribute('aria-pressed', String(isHidden));
     setTimeout(() => {
       const target = id && document.getElementById(id);
       target?.focus();
@@ -231,11 +224,11 @@
     }, 0);
   });
 
-  /* ==================================================
-   * Username validation & availability
-   * ==================================================*/
+  /* Username validation & availability */
   function validUsernameFormat(u) {
-    if (!u) return false; if (u.length < 3 || u.length > 24) return false; return /^[a-zA-Z0-9_.]+$/.test(u);
+    if (!u) return false;
+    if (u.length < 3 || u.length > 24) return false;
+    return /^[a-zA-Z0-9_.]+$/.test(u);
   }
 
   async function checkUsername(u) {
@@ -253,9 +246,7 @@
   const checkUsernameDebounced = debounce(checkUsername, 300);
   on(els.suUsername, 'input', (e) => checkUsernameDebounced(String(e?.target?.value ?? '').trim()));
 
-  /* ==================================================
-   * Password strength & confirmation
-   * ==================================================*/
+  /* Password strength & confirmation */
   const reqList = $('#su-reqs');
   const reqLen  = reqList?.querySelector('[data-rule="len"]');
   const reqMix  = reqList?.querySelector('[data-rule="mix"]');
@@ -293,23 +284,18 @@
   on(els.suPassword, 'input', (e) => { const pw = toStr(e?.target?.value); updateReqs(pw); updateStrength(pw); validateConfirm(); });
   on(els.suConfirm,  'input', validateConfirm);
 
-  /* ==================================================
-   * Auth form handlers
-   * ==================================================*/
   function showAuthCard(force = false) {
-  if (onboardingLocked && !force) return; // only block when not forced
-  els.authRoot && (els.authRoot.hidden = false);
-  if (els.prefsRoot) {
-    els.prefsRoot.hidden = true;
-    els.prefsRoot.classList.add('is-hidden');
+    if (onboardingLocked && !force) return; // only block when not forced
+    if (els.authRoot) els.authRoot.hidden = false;
+    if (els.prefsRoot) els.prefsRoot.hidden = true;
   }
-}
+
   function openOnboardingHobbies() {
     onboardingLocked = true;
-    els.authRoot && (els.authRoot.hidden = true);
-    if (els.prefsRoot) { els.prefsRoot.hidden = false; els.prefsRoot.classList.remove('is-hidden'); }
-    if (els.stepHobbies) { els.stepHobbies.hidden = false; els.stepHobbies.classList.remove('is-hidden'); }
-    if (els.stepGenres)  { els.stepGenres.hidden  = true;  els.stepGenres.classList.add('is-hidden'); }
+    if (els.authRoot) els.authRoot.hidden = true;
+    if (els.prefsRoot) els.prefsRoot.hidden = false;
+    if (els.stepHobbies) els.stepHobbies.hidden = false;
+    if (els.stepGenres)  els.stepGenres.hidden  = true;
     els.prefsRoot?.querySelector('#hobbyChoices .chip')?.focus();
   }
 
@@ -325,7 +311,7 @@
 
     if (!strong || !match || !termsOK) return setText(els.suStatus, 'Please complete all requirements.');
 
-    els.suSubmit && (els.suSubmit.disabled = true);
+    if (els.suSubmit) els.suSubmit.disabled = true;
     setText(els.suStatus, 'Creating your account…');
     openOnboardingHobbies();
 
@@ -342,7 +328,7 @@
       setText(els.suStatus, err?.message ?? 'Sign-up failed.');
       showAuthCard();
     } finally {
-      els.suSubmit && (els.suSubmit.disabled = false);
+      if (els.suSubmit) els.suSubmit.disabled = false;
     }
   });
 
@@ -354,7 +340,7 @@
     setText(els.siStatus, pw ? 'Signing you in…' : 'Enter your password.');
     if (!pw) return;
 
-    els.siSubmit && (els.siSubmit.disabled = true);
+    if (els.siSubmit) els.siSubmit.disabled = true;
     try {
       let user;
       if (window.FirebaseAPI?.signIn) {
@@ -367,20 +353,15 @@
     } catch (err) {
       setText(els.siStatus, err?.message ?? 'Could not sign in.');
     } finally {
-      els.siSubmit && (els.siSubmit.disabled = false);
+      if (els.siSubmit) els.siSubmit.disabled = false;
     }
   });
 
-  /* ==================================================
-   * Preferences flow (Hobbies → Genres → Avatars)
-   * ==================================================*/
-  const stepperEls = $$('.stepper .step');
-
+  /* Preferences flow (Hobbies - Genres - Avatars) */
   function setStep(n) {
-    stepperEls.forEach((el, i) => el.classList.toggle('is-active', i === n - 1));
-    if (els.stepHobbies)  { els.stepHobbies.hidden  = n !== 1; els.stepHobbies.classList.toggle('is-hidden',  n !== 1); }
-    if (els.stepGenres)   { els.stepGenres.hidden   = n !== 2; els.stepGenres.classList.toggle('is-hidden',   n !== 2); }
-    if (els.stepAvatars)  { els.stepAvatars.hidden  = n !== 4; els.stepAvatars.classList.toggle('is-hidden',  n !== 4); }
+    if (els.stepHobbies)  els.stepHobbies.hidden  = n !== 1;
+    if (els.stepGenres)   els.stepGenres.hidden   = n !== 2;
+    if (els.stepAvatars)  els.stepAvatars.hidden  = n !== 4; // keeping numbering to match UI copy
   }
 
   function ensureProgressUI(stepRoot, countId, progressId, min) {
@@ -394,8 +375,7 @@
         <div class="pill"><div id="${progressId}" class="pill-fill" style="width:0%"></div></div>
       `;
       const chips = stepRoot.querySelector('.chip-group');
-      if (chips && chips.parentNode) chips.parentNode.insertBefore(progress, chips);
-      else stepRoot.prepend(progress);
+      (chips && chips.parentNode ? chips.parentNode : stepRoot).insertBefore(progress, chips || stepRoot.firstChild);
     } else {
       const label = progress.querySelector(`#${countId}`);
       if (label) label.textContent = `Selected: 0/${min}`;
@@ -424,15 +404,19 @@
       const btn = e.target.closest('.chip');
       if (!btn) return;
       const v = btn.dataset.value; if (!v) return;
-      if (btn.classList.contains('selected')) { btn.classList.remove('selected'); values.delete(v); }
-      else if (max === Infinity || values.size < max) { btn.classList.add('selected'); values.add(v); const map = group.id === 'genreChoices' ? GENRE_EMOJI : HOBBY_EMOJI; popEmojiFrom(btn, map[v] || '✨'); }
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected'); values.delete(v);
+      } else if (max === Infinity || values.size < max) {
+        btn.classList.add('selected'); values.add(v);
+        const map = group.id === 'genreChoices' ? GENRE_EMOJI : HOBBY_EMOJI;
+        popEmojiFrom(btn, map[v] || '✨');
+      }
       updateProgress();
     });
 
     return { get values() { return Array.from(values); }, min, max };
   }
 
-  // Init Hobbies group
   if (els.nextToGenres) els.nextToGenres.disabled = true;
   const hobbies = initChipGroup(els.hobbyChoices, {
     min: MIN_HOBBIES,
@@ -464,7 +448,6 @@
     }
   });
 
-  // Safety: if user lands on step 2 directly
   (function initGenresJustInCase() {
     ensureProgressUI(els.stepGenres, 'genreCount', 'genreProgress', MIN_GENRES);
     if (!window.__genresInitDone) {
@@ -482,86 +465,72 @@
 
   on(els.backToHobbies, 'click', () => setStep(1));
 
-  /* ==================================================
- * Avatars step
- * ==================================================*/
-function goToAvatars() {
-  // Show the avatar step
-  setStep(4);
+  /* Avatars */
+  function goToAvatars() {
+    setStep(4);
 
-  // Default hero emoji to the first free avatar if present
-  const grid = document.getElementById('avatarChoices');
-  const hero = document.getElementById('avatarHeroEmoji');
+    const grid = els.avatarChoices;
+    const hero = document.getElementById('avatarHeroEmoji');
 
-  if (grid && hero) {
-    const firstFree = grid.querySelector('.avatar-card:not(.is-locked) .emoji');
-    if (firstFree) {
-      hero.textContent = firstFree.textContent.trim();
-      hero.classList.remove('animate');
-      void hero.offsetWidth; // reset animation
-      hero.classList.add('animate');
+    if (grid && hero) {
+      const firstFree = grid.querySelector('.avatar-card:not(.is-locked) .emoji');
+      if (firstFree) {
+        hero.textContent = firstFree.textContent.trim();
+        hero.classList.remove('animate');
+        void hero.offsetWidth;
+        hero.classList.add('animate');
+      }
     }
   }
-}
 
-// Avatar selection logic (with guards)
-(() => {
-  const avatarGrid  = document.getElementById('avatarChoices');
-  const heroEmoji   = document.getElementById('avatarHeroEmoji');
-  const continueBtn = document.getElementById('finishOnboarding');
+  (() => {
+    const avatarGrid  = els.avatarChoices;
+    const heroEmoji   = document.getElementById('avatarHeroEmoji');
+    const continueBtn = els.finishBtn;
 
-  if (!avatarGrid || !continueBtn) return; // nothing to wire up
+    if (!avatarGrid || !continueBtn) return; 
 
-  let selectedAvatarId = null;
+    let selectedAvatarId = null;
 
-  avatarGrid.addEventListener('click', (e) => {
-    const card = e.target.closest('.avatar-card');
-    if (!card || card.classList.contains('is-locked')) return; // ignore locked
+    avatarGrid.addEventListener('click', (e) => {
+      const card = e.target.closest('.avatar-card');
+      if (!card || card.classList.contains('is-locked')) return; 
 
-    // Clear previous selection
-    avatarGrid.querySelectorAll('.avatar-card').forEach(btn => {
-      btn.classList.remove('selected');
-      btn.setAttribute('aria-pressed', 'false');
+      avatarGrid.querySelectorAll('.avatar-card').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.setAttribute('aria-pressed', 'false');
+      });
+
+      card.classList.add('selected');
+      card.setAttribute('aria-pressed', 'true');
+      selectedAvatarId = card.dataset.id;
+
+      const emojiSpan = card.querySelector('.emoji');
+      if (emojiSpan && heroEmoji) {
+        heroEmoji.textContent = emojiSpan.textContent.trim();
+        heroEmoji.classList.remove('animate');
+        void heroEmoji.offsetWidth; 
+        heroEmoji.classList.add('animate');
+      }
+
+      continueBtn.disabled = false;
     });
 
-    // Mark new selection
-    card.classList.add('selected');
-    card.setAttribute('aria-pressed', 'true');
-    selectedAvatarId = card.dataset.id;
+    continueBtn.addEventListener('click', () => {
+      if (!selectedAvatarId) return;
+      try { localStorage.setItem('blurb:selectedAvatar', selectedAvatarId); } catch {}
+      window.location.href = 'homepage.html';
+    });
+  })();
 
-    // Update hero preview
-    const emojiSpan = card.querySelector('.emoji');
-    if (emojiSpan && heroEmoji) {
-      heroEmoji.textContent = emojiSpan.textContent.trim();
-      heroEmoji.classList.remove('animate');
-      void heroEmoji.offsetWidth; // reset animation
-      heroEmoji.classList.add('animate');
-    }
-
-    // Enable continue button
-    continueBtn.disabled = false;
+  on(els.backToGenres, 'click', (e) => {
+    e.preventDefault();
+    setStep(2);
+    els.stepGenres?.querySelector('.pref-title')?.focus?.();
+    els.stepGenres?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   });
 
-  // Redirect on continue
-  continueBtn.addEventListener('click', () => {
-    if (!selectedAvatarId) return;
-    // Optional: persist selection
-    try { localStorage.setItem('blurb:selectedAvatar', selectedAvatarId); } catch {}
-    window.location.href = 'homepage.html';
-  });
-})();
-
-on(els.backToGenres, 'click', (e) => {
-  e.preventDefault();
-  setStep(2);
-  els.stepGenres?.querySelector('.pref-title')?.focus?.();
-  els.stepGenres?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-});
-
-
-  /* ==================================================
-   * Save Genres → go to Avatars
-   * ==================================================*/
+  /* Save Genres - go to Avatars */
   on(els.savePrefs, 'click', async () => {
     const data = { hobbies: hobbies.values, genres: (window.__genresGroup?.values ?? []) };
     if (els.savePrefs) els.savePrefs.disabled = true;
@@ -570,7 +539,6 @@ on(els.backToGenres, 'click', (e) => {
       if (window.FirebaseAPI?.savePreferences) await window.FirebaseAPI.savePreferences(data);
       else await new Promise((r) => setTimeout(r, 800));
       setText(els.prefsStatus, 'Preferences saved!');
-      // Push to avatar step
       goToAvatars();
     } catch {
       setText(els.prefsStatus, 'Could not save preferences.');
@@ -579,21 +547,16 @@ on(els.backToGenres, 'click', (e) => {
     }
   });
 
-  /* ==================================================
-   * Back buttons & global init
-   * ==================================================*/
+  /* Back buttons */
   on(els.prefsBack, 'click', () => {
-  onboardingLocked = false;       // allow leaving onboarding
-  showAuthCard(true);             // force reveal auth card
-  activateTab('signup');
-  els.suUsername?.focus();
-});
+    onboardingLocked = false;      
+    showAuthCard(true);            
+    activateTab('signup');
+    els.suUsername?.focus();
+  });
 
-
-  // Initial view
   activateTab('signup');
   setStep(1);
 
-  // Firebase auth state debug
   window.FirebaseAPI?.onAuth?.((user) => { console.log('Auth state:', user ? `signed in as ${user.email}` : 'signed out'); });
 })();
