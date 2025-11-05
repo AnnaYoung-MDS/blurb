@@ -560,3 +560,181 @@
 
   window.FirebaseAPI?.onAuth?.((user) => { console.log('Auth state:', user ? `signed in as ${user.email}` : 'signed out'); });
 })();
+
+// Avatar
+document.addEventListener('DOMContentLoaded', () => {
+  const link = document.getElementById('userLink');
+  const img = document.getElementById('headerAvatar');  
+  const fallback = document.getElementById('avatarFallback');
+
+  if (!link || !fallback) return;
+
+  const emoji = localStorage.getItem('avatarEmoji');
+  const isAuthed = localStorage.getItem('isAuthed') === 'true';
+
+  if (isAuthed && emoji) {
+    fallback.textContent = emoji;
+    fallback.hidden = false;
+    if (img) img.hidden = true;
+    link.href = '/account';
+    link.setAttribute('aria-label', 'Your account');
+  } else {
+    // default
+    fallback.textContent = '•';
+    fallback.hidden = false;
+    if (img) img.hidden = true;
+    link.href = '/login';
+    link.setAttribute('aria-label', 'Sign in');
+  }
+});
+
+/* Book suggestions */
+
+// 1) Find where to mount the rail on the page
+const railEl = document.getElementById('bookRail');
+const leftBtn = document.querySelector('.rail-btn.left');
+const rightBtn = document.querySelector('.rail-btn.right');
+
+// 2) Static example catalogue (replace or expand this list anytime)
+const BOOKS = [
+  {
+    id: 'b1',
+    title: 'Blue Moon',
+    author: 'S. K. Hart',
+    pages: 320,
+    img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop',
+    tags: ['fantasy', 'adventure', 'art']
+  },
+  {
+    id: 'b2',
+    title: 'Crimson Notes',
+    author: 'Aria Vale',
+    pages: 280,
+    img: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=600&auto=format&fit=crop',
+    tags: ['mystery', 'music', 'realistic']
+  },
+  {
+    id: 'b3',
+    title: 'Neon Court',
+    author: 'Kai March',
+    pages: 410,
+    img: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=600&auto=format&fit=crop',
+    tags: ['scifi', 'gaming', 'graphic']
+  },
+  {
+    id: 'b4',
+    title: 'Trail & Tide',
+    author: 'Juno Park',
+    pages: 350,
+    img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop',
+    tags: ['adventure', 'nature', 'travel']
+  },
+  {
+    id: 'b5',
+    title: 'Shadow Sidelanes',
+    author: 'M. Reyes',
+    pages: 265,
+    img: 'https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=600&auto=format&fit=crop',
+    tags: ['sports', 'mystery', 'fitness']
+  }
+];
+
+// 3) Read preferences from localStorage
+function getUserPrefs() {
+  const hobbies = JSON.parse(localStorage.getItem('selectedHobbies') || '[]');
+  const genres = JSON.parse(localStorage.getItem('selectedGenres') || '[]');
+
+  return {
+    hobbies: hobbies.map(s => s.toLowerCase()),
+    genres: genres.map(s => s.toLowerCase())
+  };
+}
+
+// 4) Score books by overlap with prefs (genres weighted x2)
+function scoreBook(book, prefs) {
+  const { hobbies, genres } = prefs;
+  let score = 0;
+  let matched = [];
+
+  book.tags.forEach(tag => {
+    const t = tag.toLowerCase();
+    if (genres.includes(t)) { score += 2; matched.push(t); }
+    else if (hobbies.includes(t)) { score += 1; matched.push(t); }
+  });
+
+  return { score, matched };
+}
+
+// 5) Render a book tile
+function renderTile(book, matchedTags) {
+  const card = document.createElement('article');
+  card.className = 'book-tile';
+
+  const cover = document.createElement('div');
+  cover.className = 'book-cover';
+  cover.style.backgroundImage = `url("${book.img}")`;
+
+  const meta = document.createElement('div');
+  meta.className = 'book-meta';
+  meta.innerHTML = `
+    <h3>${book.title}</h3>
+    <p class="byline">by ${book.author}</p>
+    <p class="pages">${book.pages} pages</p>
+  `;
+
+  const tags = document.createElement('div');
+  tags.className = 'tag-row';
+
+  // ✅ Always show tags — if no matched tags, show all of book.tags faded
+  const displayTags = matchedTags.length ? matchedTags : book.tags;
+
+  displayTags.forEach(tag => {
+    const chip = document.createElement('span');
+    chip.className = 'tag' + (matchedTags.includes(tag) ? '' : ' faded');
+    chip.textContent = tag;
+    tags.appendChild(chip);
+  });
+
+  card.append(cover, meta, tags);
+  return card;
+}
+
+
+// 6) Setup and render the rail
+function populateRail() {
+  const prefs = getUserPrefs();
+  const scoredBooks = BOOKS.map(book => {
+    const { score, matched } = scoreBook(book, prefs);
+    return { book, score, matched };
+  });
+
+  // Filter out non-matching unless needs fallback
+  const matches = scoredBooks.filter(sb => sb.score > 0).sort((a, b) => b.score - a.score);
+  const displayBooks = matches.length ? matches : scoredBooks.slice(0, 5);
+
+  railEl.innerHTML = '';
+  displayBooks.forEach(({ book, matched }) => {
+    railEl.appendChild(renderTile(book, matched));
+  });
+
+  updateArrows();
+}
+
+// 7) Scroll helpers and button handlers
+function updateArrows() {
+  const maxScroll = railEl.scrollWidth - railEl.clientWidth;
+  leftBtn.disabled = railEl.scrollLeft <= 2;
+  rightBtn.disabled = railEl.scrollLeft >= maxScroll - 2;
+}
+
+function scrollByTiles(direction) {
+  const tileWidth = railEl.querySelector('.book-tile')?.clientWidth || 200;
+  railEl.scrollBy({ left: direction * (tileWidth + 12), behavior: 'smooth' });
+}
+
+leftBtn.addEventListener('click', () => scrollByTiles(-1));
+rightBtn.addEventListener('click', () => scrollByTiles(1));
+railEl.addEventListener('scroll', updateArrows);
+
+// Run everything
+populateRail();
