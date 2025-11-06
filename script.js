@@ -590,12 +590,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Book suggestions */
 
-// 1) Find where to mount the rail on the page
 const railEl = document.getElementById('bookRail');
 const leftBtn = document.querySelector('.rail-btn.left');
 const rightBtn = document.querySelector('.rail-btn.right');
 
-// 2) Static example catalogue (replace or expand this list anytime)
 const BOOKS = [
   {
     id: 'b1',
@@ -639,7 +637,6 @@ const BOOKS = [
   }
 ];
 
-// 3) Read preferences from localStorage
 function getUserPrefs() {
   const hobbies = JSON.parse(localStorage.getItem('selectedHobbies') || '[]');
   const genres = JSON.parse(localStorage.getItem('selectedGenres') || '[]');
@@ -650,7 +647,6 @@ function getUserPrefs() {
   };
 }
 
-// 4) Score books by overlap with prefs (genres weighted x2)
 function scoreBook(book, prefs) {
   const { hobbies, genres } = prefs;
   let score = 0;
@@ -665,7 +661,6 @@ function scoreBook(book, prefs) {
   return { score, matched };
 }
 
-// 5) Render a book tile
 function renderTile(book, matchedTags) {
   const card = document.createElement('article');
   card.className = 'book-tile';
@@ -685,7 +680,6 @@ function renderTile(book, matchedTags) {
   const tags = document.createElement('div');
   tags.className = 'tag-row';
 
-  // ✅ Always show tags — if no matched tags, show all of book.tags faded
   const displayTags = matchedTags.length ? matchedTags : book.tags;
 
   displayTags.forEach(tag => {
@@ -700,7 +694,6 @@ function renderTile(book, matchedTags) {
 }
 
 
-// 6) Setup and render the rail
 function populateRail() {
   const prefs = getUserPrefs();
   const scoredBooks = BOOKS.map(book => {
@@ -708,7 +701,6 @@ function populateRail() {
     return { book, score, matched };
   });
 
-  // Filter out non-matching unless needs fallback
   const matches = scoredBooks.filter(sb => sb.score > 0).sort((a, b) => b.score - a.score);
   const displayBooks = matches.length ? matches : scoredBooks.slice(0, 5);
 
@@ -720,7 +712,6 @@ function populateRail() {
   updateArrows();
 }
 
-// 7) Scroll helpers and button handlers
 function updateArrows() {
   const maxScroll = railEl.scrollWidth - railEl.clientWidth;
   leftBtn.disabled = railEl.scrollLeft <= 2;
@@ -736,5 +727,4 @@ leftBtn.addEventListener('click', () => scrollByTiles(-1));
 rightBtn.addEventListener('click', () => scrollByTiles(1));
 railEl.addEventListener('scroll', updateArrows);
 
-// Run everything
 populateRail();

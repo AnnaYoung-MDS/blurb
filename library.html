@@ -14,11 +14,11 @@
     <link rel="stylesheet" href="style.css" />
   </head>
 
-  <body class="theme-butter has-header">
+<body class="theme-butter has-header">
     <!-- Header -->
     <header class="site-header" role="banner">
       <div class="site-header__inner">
-        <a class="brand" href="homepage.html" aria-label="Blurb home">
+        <a class="brand" href="/" aria-label="Blurb home">
           <span class="brand-mark" aria-hidden="true">
             <!-- Logo -->
             <svg class="brand-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -38,38 +38,64 @@
       </div>
     </header>
 
-    <main class="home">
-      <!-- Hero -->
-      <section class="home-hero">
-        <h1 class="home-title">Welcome back!</h1>
+    <main class="library">
+      <h1 class="lib-title">Library</h1>
 
-        <!-- CTA -->
-        <a href="library.html">
-          <button class="btn btn-primary" id="logReadingBtn">Log Reading</button>
-        </a>
-      </section>
+      <!-- Segmented actions bar -->
+<div class="segbar" role="tablist" aria-label="Library filters">
+  <button class="seg is-active" id="seg-books" role="tab" aria-selected="true" title="Books">
+    <span class="iconoir--book"></span>
+  </button>
+  <button class="seg" id="seg-add" role="tab" aria-selected="false" title="Add">
+    <span class="stash--plus"></span>
+  </button>
+  <button class="seg" id="seg-faves" role="tab" aria-selected="false" title="Favourites">
+    <span class="mdi--heart"></span>
+  </button>
+  <button class="seg" id="seg-badges" role="tab" aria-selected="false" title="Badges">
+    <span class="tabler--award-filled"></span>
+  </button>
+</div>
 
-      <!-- Suggestions -->
-      <section class="suggestions">
-        <h2 class="section-title">Book Suggestions</h2>
-        <p class="section-subtitle">Based off your hobbies & genres</p>
 
-        <div class="book-rail-wrap">
-          <button class="rail-btn left" aria-label="Scroll left" data-dir="-1">←</button>
+      <!-- Empty state -->
+      <p id="emptyState">Your library is empty</p>
 
-          <div id="bookRail" class="book-rail" role="list" aria-label="Personalised book suggestions"></div>
+      <!-- Books render here -->
+      <section id="libraryGrid" aria-live="polite"></section>
 
-          <button class="rail-btn right" aria-label="Scroll right" data-dir="1">→</button>
-        </div>
-      </section>
+      <!-- Add pane (hidden until + is selected) -->
+<section id="addPane" hidden>
+  <h2 class="add-heading">Add a new book</h2>
 
-      <!-- Bottom nav -->
+  <!-- mini actions bar -->
+  <div class="segbar segbar--sub" role="tablist" aria-label="Add book methods">
+    <button class="seg is-active" id="add-camera" role="tab" aria-selected="true" title="Use camera">
+      <span class="solar--camera-bold"></span>
+    </button>
+    <button class="seg" id="add-upload" role="tab" aria-selected="false" title="Upload">
+      <span class="line-md--upload"></span>
+    </button>
+    <button class="seg" id="add-manual" role="tab" aria-selected="false" title="Type it in">
+      <span class="solar--keyboard-bold"></span>
+    </button>
+  </div>
+
+  <div class="add-hero">
+    <div class="big-icon solar--camera-bold"></div>
+    <p class="add-sub">Scan the barcode on the back of your book</p>
+    <button class="btn btn-dark" id="openCameraBtn">Open Camera</button>
+  </div>
+</section>
+
+
+    <!-- Bottom nav -->
       <nav class="tabbar" aria-label="Primary">
-        <a class="tab is-active" href="homepage.html">
+        <a class="tab" href="homepage.html">
           <!-- home -->
           <span class="material-symbols--home-rounded"></span>
         </a>
-        <a class="tab" href="library.html">
+        <a class="tab is-active" href="library.html">
           <!-- bookshelf -->
           <span class="ion--library"></span>
         </a>
@@ -78,13 +104,14 @@
           <span class="fluent--people-team-20-filled"></span>
         </a>
       </nav>
-
     </main>
-
 
     <!-- Scripts -->
     <script type="module" src="script.js"></script>
 
     <script type="module" src="avatar.js"></script>
-  </body>
+
+    <script type="module" src="library.js"></script>
+    
+</body>
 </html>
