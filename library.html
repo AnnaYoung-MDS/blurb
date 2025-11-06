@@ -6,15 +6,15 @@
     <title>Blurb</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Nunito:wght@400;600&display=swap" rel="stylesheet" />
 
     <!-- CSS -->
     <link rel="stylesheet" href="style.css" />
   </head>
 
-<body class="theme-butter has-header">
+  <body class="theme-butter has-header">
     <!-- Header -->
     <header class="site-header" role="banner">
       <div class="site-header__inner">
@@ -41,102 +41,84 @@
     <main class="library">
       <h1 class="lib-title">Library</h1>
 
-      <!-- Segmented actions bar -->
-<div class="segbar" role="tablist" aria-label="Library filters">
-  <button class="seg is-active" id="seg-books" role="tab" aria-selected="true" title="Books">
-    <span class="iconoir--book"></span>
-  </button>
-  <button class="seg" id="seg-add" role="tab" aria-selected="false" title="Add">
-    <span class="stash--plus"></span>
-  </button>
-  <!-- any classes/icons you want; key is id or data-view -->
-<button id="seg-fav" class="seg" data-view="favorites">
-  <i class="mdi--heart"></i>
-</button>
+      <!-- Actions -->
+      <div class="segbar" role="tablist" aria-label="Library filters">
+        <button class="seg is-active" id="seg-books" role="tab" aria-selected="true" title="Books" type="button">
+          <span class="iconoir--book"></span>
+        </button>
+        <button class="seg" id="seg-add" role="tab" aria-selected="false" title="Add" type="button">
+          <span class="stash--plus"></span>
+        </button>
+        <button id="seg-fav" class="seg" data-view="favorites" type="button" title="Favorites">
+          <i class="mdi--heart"></i>
+        </button>
+        <button class="seg" id="seg-badges" role="tab" aria-selected="false" title="Badges" type="button">
+          <span class="tabler--award-filled"></span>
+        </button>
+      </div>
 
-  <button class="seg" id="seg-badges" role="tab" aria-selected="false" title="Badges">
-    <span class="tabler--award-filled"></span>
-  </button>
-</div>
-
-
-      <!-- Empty state -->
+      <!-- Empty library -->
       <p id="emptyState">Your library is empty</p>
 
-      <!-- Books render here -->
+      <!-- Add books -->
       <section id="libraryGrid" aria-live="polite"></section>
 
-      <!-- Add pane (hidden until + is selected) -->
-<section id="addPane" hidden>
-  <h2 class="add-heading">Add a new book</h2>
+      <section id="addPane" hidden>
+        <h2 class="add-heading">Add a new book</h2>
 
-  <!-- mini actions bar -->
-  <div class="segbar segbar--sub" role="tablist" aria-label="Add book methods">
-    <button class="seg is-active" id="add-camera" role="tab" aria-selected="true" title="Use camera">
-      <span class="solar--camera-bold"></span>
-    </button>
-    <button class="seg" id="add-upload" role="tab" aria-selected="false" title="Upload">
-      <span class="line-md--upload"></span>
-    </button>
-    <button class="seg" id="add-manual" role="tab" aria-selected="false" title="Type it in">
-      <span class="solar--keyboard-bold"></span>
-    </button>
-  </div>
+        <!-- Mini actions -->
+        <div class="segbar segbar--sub" role="tablist" aria-label="Add book methods">
+          <button class="seg is-active" id="add-camera" role="tab" aria-selected="true" title="Use camera" type="button">
+            <span class="solar--camera-bold"></span>
+          </button>
+          <button class="seg" id="add-upload" role="tab" aria-selected="false" title="Upload" type="button">
+            <span class="line-md--upload"></span>
+          </button>
+          <button class="seg" id="add-manual" role="tab" aria-selected="false" title="Type it in" type="button">
+            <span class="solar--keyboard-bold"></span>
+          </button>
+        </div>
 
-  <div class="add-hero">
-    <div class="big-icon solar--camera-bold"></div>
-    <p class="add-sub">Scan the barcode on the back of your book</p>
-    <button class="btn btn-dark" id="openCameraBtn">Open Camera</button>
-  </div>
-</section>
+        <div class="add-hero">
+          <div class="big-icon solar--camera-bold"></div>
+          <p class="add-sub">Scan the barcode on the back of your book</p>
+          <button class="btn btn-dark" id="openCameraBtn" type="button">Open Camera</button>
+        </div>
+      </section>
 
-    <!-- Scanner modal -->
-<div id="scanModal" class="modal" aria-hidden="true" role="dialog" aria-label="Scan barcode">
-  <div class="modal__backdrop" data-close></div>
-  <div class="modal__dialog" role="document" tabindex="-1">
+      <!-- Scanner -->
+      <div id="scanModal" class="modal" aria-hidden="true" role="dialog" aria-label="Scan barcode">
+        <div class="modal__backdrop" data-close></div>
+        <div class="modal__dialog" role="document" tabindex="-1">
+          <button id="exitButton" class="modal__close" data-close="true" aria-label="Close" type="button">×</button>
 
-<!-- AFTER -->
-<button id="exitButton"
-        class="modal__close"
-        data-close="true"
-        aria-label="Close">×</button>
+          <h3 style="margin:0 0 8px;">Scan the barcode</h3>
+          <p style="margin:0 0 10px;color:#555;">Point your camera at the barcode on the back cover.</p>
+          <div id="scannerViewport" style="width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;background:#000;"></div>
+          <p id="scanStatus" class="status" aria-live="polite" style="margin:10px 0 0;color:#666;"></p>
+        </div>
+      </div>
 
-
-    <h3 style="margin:0 0 8px;">Scan the barcode</h3>
-    <p style="margin:0 0 10px;color:#555;">Point your camera at the barcode on the back cover.</p>
-    <div id="scannerViewport" style="width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;background:#000;"></div>
-    <p id="scanStatus" class="status" aria-live="polite" style="margin:10px 0 0;color:#666;"></p>
-  </div>
-</div>
-
-    <!-- Bottom nav -->
+      <!-- Bottom -->
       <nav class="tabbar" aria-label="Primary">
-        <a class="tab" href="homepage.html">
-          <!-- home -->
-          <span class="material-symbols--home-rounded"></span>
+        <a class="tab" href="homepage.html" aria-label="Home">
+          <span class="material-symbols--home-rounded" aria-hidden="true"></span>
         </a>
-        <a class="tab is-active" href="library.html">
-          <!-- bookshelf -->
-          <span class="ion--library"></span>
+        <a class="tab is-active" href="library.html" aria-label="Library">
+          <span class="ion--library" aria-hidden="true"></span>
         </a>
-        <a class="tab" href="friends.html">
-          <!-- group -->
-          <span class="fluent--people-team-20-filled"></span>
+        <a class="tab" href="friends.html" aria-label="Friends">
+          <span class="fluent--people-team-20-filled" aria-hidden="true"></span>
         </a>
       </nav>
     </main>
 
     <!-- Scripts -->
-     <!-- Firebase (if not already on this page) -->
-<script type="module" src="firebase.js"></script>
-     <!-- QuaggaJS (barcode scanning) -->
-<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js" defer></script>
+    <!-- QuaggaJS -->
+    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js" defer></script>
 
     <script type="module" src="script.js"></script>
-
     <script type="module" src="avatar.js"></script>
-
     <script type="module" src="library.js"></script>
-    
-</body>
+  </body>
 </html>
