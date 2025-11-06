@@ -32,6 +32,21 @@ function ensureBookId(b) {
   return b;
 }
 
+// ---------- awards config / storage ----------
+const AWARDS_DEF = [
+  { id: "award-pages-50",  metric: "pagesRead",     goal: 50, label: "50 Pages" },
+  { id: "award-days-7",    metric: "streakDays",    goal: 7,  label: "7-Day Reading Streak" },
+  { id: "award-books-3",   metric: "finishedBooks", goal: 3,  label: "Finished 3 Books" },
+];
+
+function getEarnedAwards() {
+  try { return JSON.parse(localStorage.getItem("blurb:awards-earned") || "{}"); }
+  catch { return {}; }
+}
+function setEarnedAwards(map) {
+  localStorage.setItem("blurb:awards-earned", JSON.stringify(map));
+}
+
 // ---------- books CRUD/render ----------
 function addBookToLocalLibrary(book) {
   const books = getBooks();
@@ -1128,6 +1143,106 @@ function triggerReadingConfetti(opts = {}) {
   setTimeout(() => layer.remove(), maxLifetime + 220);
 }
 
+// ---------- award celebration ----------
+// ---------- award celebration (longer + hover to hold + click to dismiss) ----------
+function showAwardToast(title, subtitle = "", opts = {}) {
+  const {
+    duration = 6000,      // how long to stay visible (ms)
+    stickyOnHover = true, // pause auto-hide while hovered/focused
+    closeOnClick = true   // allow manual dismiss on click
+  } = opts;
+
+  const id = "awardToast";
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = id;
+    el.style.cssText = `
+      position: fixed; left: 50%; top: 18px; transform: translateX(-50%);
+      background: #111; color:#fff; padding: 12px 16px; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25); z-index: 2147483600;
+      display:flex; align-items:center; gap:10px; font-weight:800; cursor: default;
+    `;
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+  }
+
+  el.innerHTML = `
+    <span style="font-size:22px; line-height:1">🏆</span>
+    <div style="display:grid; gap:2px; max-width: 70vw;">
+      <span>${escapeHtml(title)}</span>
+      ${subtitle ? `<small style="opacity:.8;">${escapeHtml(subtitle)}</small>` : ""}
+    </div>
+  `;
+
+  // clear any previous timer
+  if (el._hideTimer) clearTimeout(el._hideTimer);
+
+  const scheduleHide = () => {
+    if (duration === Infinity) return; // never autohide
+    el._hideTimer = setTimeout(() => el.remove(), duration);
+  };
+
+  // optional: pause on hover/focus
+  if (stickyOnHover) {
+    el.onmouseenter = () => { if (el._hideTimer) clearTimeout(el._hideTimer); };
+    el.onmouseleave = scheduleHide;
+    el.onfocusin    = el.onmouseenter;
+    el.onfocusout   = el.onmouseleave;
+    el.tabIndex = 0; // make focusable for keyboard users
+  } else {
+    el.onmouseenter = el.onmouseleave = el.onfocusin = el.onfocusout = null;
+  }
+
+  // optional: click to dismiss
+  if (closeOnClick) {
+    el.onclick = () => { if (el._hideTimer) clearTimeout(el._hideTimer); el.remove(); };
+  } else {
+    el.onclick = null;
+  }
+
+  scheduleHide();
+}
+
+
+function celebrateAward(award) {
+  // Reuse your existing effects: just swap the emojis to trophies ✨
+  triggerBookEmojiRain({
+    emojis: ["🏆","🥇","🎖️","🌟","✨"],
+    count: 80, fallMin: 4.5, fallMax: 8, drift: 100
+  });
+  triggerReadingConfetti();
+  showAwardToast("Award Unlocked!", award.label);
+}
+
+function checkAwardsUnlocks(prevStats, nextStats) {
+  const earned = getEarnedAwards();
+  const newly = [];
+
+  for (const a of AWARDS_DEF) {
+    const before = Number(prevStats?.[a.metric] || 0);
+    const after  = Number(nextStats?.[a.metric] || 0);
+    const hitNow = before < a.goal && after >= a.goal;
+    if (hitNow && !earned[a.id]) {
+      earned[a.id] = { at: Date.now() };
+      newly.push(a);
+    }
+  }
+
+  if (newly.length) {
+    setEarnedAwards(earned);
+    // celebrate the first (or loop if you want multiple toasts)
+    celebrateAward(newly[0]);
+    // Optional: visually mark the card as “earned” if present
+    newly.forEach(a => {
+      const card = document.getElementById(a.id);
+      if (card) card.classList.add("is-earned");
+    });
+  }
+}
+
+
 // ---------- favorites & stats ----------
 function getFavoriteBooks() {
   return getBooks().filter((b) => b && b.fav === true);
@@ -1135,9 +1250,13 @@ function getFavoriteBooks() {
 
 // Keep _updateStatsAfterLog focused only on stats changes.
 function _updateStatsAfterLog(pagesAdded, finishedThisLog) {
-  const stats = (window.BlurbAwards?.getStats?.() || {
+  // snapshot BEFORE changes so we can detect thresholds crossing
+  const prevStats = (window.BlurbAwards?.getStats?.() || {
     pagesRead: 0, finishedBooks: 0, streakDays: 0, lastReadISO: null
   });
+
+  // work on a copy
+  const stats = { ...prevStats };
 
   // 1) Points & pages
   stats.pagesRead = Math.max(0, (Number(stats.pagesRead) || 0) + (Number(pagesAdded) || 0));
@@ -1163,9 +1282,13 @@ function _updateStatsAfterLog(pagesAdded, finishedThisLog) {
   }
   stats.lastReadISO = today.toISOString();
 
-  // Persist & refresh if Awards visible
+  // Persist
   window.BlurbAwards?.setStats?.(stats);
+
+  // Detect newly earned awards and celebrate
+  checkAwardsUnlocks(prevStats, stats);
 }
+
 
 // ---------- awards pane (callable from anywhere) ----------
 function showAwardsPane() {
@@ -1279,4 +1402,3 @@ document.addEventListener("DOMContentLoaded", () => {
   mountSubSegbarSlider();
   mountExitButton();
 });
-
