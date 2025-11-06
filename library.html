@@ -88,6 +88,24 @@
   </div>
 </section>
 
+    <!-- Scanner modal -->
+<div id="scanModal" class="modal" aria-hidden="true" role="dialog" aria-label="Scan barcode">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__dialog" role="document" tabindex="-1">
+
+<!-- AFTER -->
+<button id="exitButton"
+        class="modal__close"
+        data-close="true"
+        aria-label="Close">×</button>
+
+
+    <h3 style="margin:0 0 8px;">Scan the barcode</h3>
+    <p style="margin:0 0 10px;color:#555;">Point your camera at the barcode on the back cover.</p>
+    <div id="scannerViewport" style="width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;background:#000;"></div>
+    <p id="scanStatus" class="status" aria-live="polite" style="margin:10px 0 0;color:#666;"></p>
+  </div>
+</div>
 
     <!-- Bottom nav -->
       <nav class="tabbar" aria-label="Primary">
@@ -107,6 +125,11 @@
     </main>
 
     <!-- Scripts -->
+     <!-- Firebase (if not already on this page) -->
+<script type="module" src="firebase.js"></script>
+     <!-- QuaggaJS (barcode scanning) -->
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js" defer></script>
+
     <script type="module" src="script.js"></script>
 
     <script type="module" src="avatar.js"></script>

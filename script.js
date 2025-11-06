@@ -1,730 +1,951 @@
-(() => {
-  "use strict";
+// library.js
 
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const on = (el, ev, fn, opts) => {
-    if (!el) return;
-    if (Array.isArray(el) || (el instanceof NodeList)) {
-      el.forEach((n) => n && n.addEventListener(ev, fn, opts));
-    } else {
-      el.addEventListener(ev, fn, opts);
-    }
-  };
-  const setText = (el, text) => { if (el) el.textContent = text ?? ""; };
+// ---------- data + rendering ----------
+function getBooks() {
+  try {
+    const raw = localStorage.getItem('libraryBooks');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
 
-  const toStr = (v) => (v == null ? "" : String(v));
-  const safeTrim = (v) => toStr(v).trim();
-  const val = (el) => safeTrim(el?.value);
-  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+function saveBooks(books) {
+  localStorage.setItem('libraryBooks', JSON.stringify(books));
+}
 
-  const debounce = (fn, ms = 250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
+/* NEW: programmatically set the main segbar's active button + move the slider */
+function setMainSegbarActive(id) {
+  const segbar = document.querySelector('.segbar');
+  if (!segbar) return;
 
-  const MIN_HOBBIES = 3;
-  const MIN_GENRES  = 3;
-  let onboardingLocked = false;
+  const btn = document.getElementById(id);
+  const slider = segbar.querySelector('.segbar__slider');
+  if (!btn || !slider) return;
 
-  const HOBBY_EMOJI = {
-    gaming:"🎮", music:"🎵", art:"🎨", sports:"🏀", fashion:"🧢", coding:"💻",
-    animals:"🐾", writing:"✍️", travel:"✈️", movies:"🎬", photography:"📸",
-    baking:"🧁", skateboarding:"🛹", dance:"💃", fitness:"💪", makeup:"💄",
-    nature:"🌿", collecting:"🧩", boardgames:"🎲", streaming:"📱",
-  };
+  // Update active + aria
+  segbar.querySelectorAll('.seg').forEach(b => {
+    const isActive = b === btn;
+    b.classList.toggle('is-active', isActive);
+    b.setAttribute('aria-selected', String(isActive));
+  });
 
-  const GENRE_EMOJI = {
-    fantasy:"🐉", romance:"💘", mystery:"🕵️", dystopian:"🏙️", scifi:"🚀", graphic:"🎴",
-    horror:"👻", realistic:"📖", adventure:"🧭", sports:"🏅", "contemporary-ya":"🎒",
-    paranormal:"🔮", lgbtqia:"🏳️‍🌈", humor:"😄", fanfiction:"✍️", poetry:"🪶",
-  };
+  // Force slider position
+  const pr = segbar.getBoundingClientRect();
+  const br = btn.getBoundingClientRect();
+  slider.style.width = br.width + 'px';
+  slider.style.height = br.height + 'px';
+  slider.style.transform = `translate(${br.left - pr.left}px, ${br.top - pr.top}px)`;
+}
 
-  const els = {
-    splash:        $("#splash"),
-    funLine:       $("#funLine"),
-    progressBar:   $("#progressBar"),
-    progressText:  $("#progressText"),
-    authRoot:      $("#auth"),
-    sparkles:      $("#sparkles"),
+/* NEW: force the UI to the Books tab */
+function switchToBooksTab() {
+  const segBooks = document.getElementById('seg-books');
+  const segAdd   = document.getElementById('seg-add');
 
-    tabSignup:     $("#tab-signup"),
-    tabSignin:     $("#tab-signin"),
-    panelSignup:   $("#panel-signup"),
-    panelSignin:   $("#panel-signin"),
-
-    suUsername:    $("#su-username"),
-    suEmail:       $("#su-email"),
-    suPassword:    $("#su-password"),
-    suConfirm:     $("#su-confirm"),
-    suSubmit:      $("#su-submit"),
-    suStatus:      $("#su-status"),
-    usernameHint:  $("#usernameHint"),
-    confirmHint:   $("#confirmHint"),
-
-    siEmail:       $("#si-email"),
-    siPassword:    $("#si-password"),
-    siSubmit:      $("#si-submit"),
-    siStatus:      $("#si-status"),
-
-    prefsRoot:     $("#panel-preferences"),
-    prefsBack:     $("#prefsBack"),
-    stepHobbies:   $("#pref-step-hobbies"),
-    stepGenres:    $("#pref-step-genres"),
-    stepAvatars:   $("#pref-step-avatars"),
-
-    nextToGenres:  $("#nextToGenres"),
-    backToHobbies: $("#backToHobbies"),
-    backToGenres:  $("#backToGenres"),
-    savePrefs:     $("#savePrefs"),
-    prefsStatus:   $("#prefsStatus"),
-
-    hobbyChoices:  $("#hobbyChoices"),
-    hobbyCount:    $("#hobbyCount"),
-    hobbyProgress: $("#hobbyProgress"),
-
-    genreChoices:  $("#genreChoices"),
-    genreCount:    $("#genreCount"),
-    genreProgress: $("#genreProgress"),
-
-    avatarChoices: $("#avatarChoices"),
-    avatarHint:    $("#avatarHint"),
-    avatarProgress:$("#avatarProgress"),
-    finishBtn:     $("#finishOnboarding"),
-    avatarStatus:  $("#avatarStatus"),
-  };
-
-  function popEmojiFrom(el, emoji = "✨") {
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const d = document.createElement("div");
-    d.className = "float-emoji";
-    d.textContent = emoji;
-    d.style.left = `${r.left + r.width / 2}px`;
-    d.style.top  = `${r.top  + r.height / 2}px`;
-    d.style.setProperty("--dx", `${Math.round(Math.random() * 40 - 20)}px`);
-    document.body.appendChild(d);
-    setTimeout(() => d.remove(), 800);
+  if (segBooks && segAdd) {
+    segAdd.classList.remove('is-active');
+    segAdd.setAttribute('aria-selected', 'false');
+    segBooks.classList.add('is-active');
+    segBooks.setAttribute('aria-selected', 'true');
   }
 
-  /* Loading */
-  const funPhrases = [
-    'Opening the library doors… 📚',
-    'Skimming the preface…',
-    'Dusting off the covers…',
-    'Setting the table of contents…',
-    'Bookmarking your place… 🔖',
-    'Sharpening pencils for margin notes… ✍️',
-    'Stacking fresh chapters…',
-    'Brewing a plot twist…',
-    'Checking out your library card…',
-  ];
-  let phraseIdx = 0;
-  const rotatePhrase = () => setText(els.funLine, funPhrases[(++phraseIdx) % funPhrases.length]);
+  // move the orange slider back to the Library button
+  setMainSegbarActive('seg-books');
 
-  function setProgress(pct) {
-    const p = clamp(pct, 0, 100);
-    if (els.progressBar) els.progressBar.style.width = `${p}%`;
-    setText(els.progressText, `${Math.round(p)}%`);
-    if (p >= 100) {
-      els.splash?.closest('.page')?.remove();
-      els.authRoot?.removeAttribute('hidden');
-      runSparklesOnce();
-    }
-  }
+  showBooksPane(); // updates list + hides Add pane
+}
 
-  (function startLoader() {
-    if (!els.progressBar) return;
-    setText(els.funLine, funPhrases[0]);
-    let pct = 0;
-    const tick = () => {
-      pct += Math.random() * 18 + 6;
-      rotatePhrase();
-      setProgress(pct);
-      if (pct < 100) setTimeout(tick, 420);
+function addBookToLocalLibrary(book) {
+  const books = getBooks();
+
+  // normalize categories -> array of strings
+  const incomingCats = Array.isArray(book.categories)
+    ? book.categories.map(String).filter(Boolean)
+    : [];
+
+  // de-dupe by ISBN if present
+  const idx = book.isbn
+    ? books.findIndex(b => normalizeDigits(b.isbn) === normalizeDigits(book.isbn))
+    : -1;
+
+  if (idx >= 0) {
+    // merge/upgrade existing book with any missing fields + categories
+    const existing = books[idx];
+    const mergedCats = Array.from(new Set([...(existing.categories || []), ...incomingCats]));
+    books[idx] = {
+      ...existing,
+      ...book,
+      categories: mergedCats
     };
-    setTimeout(tick, 420);
-  })();
-
-  (function setOverallStepProgress() {
-    const current = 2, total = 4;
-    const pct = Math.min(100, (current / Math.max(1, total)) * 100);
-    setText($("#flowStep"), String(current));
-    setText($("#flowTotal"), String(total));
-    const fillEl = els.stepHobbies?.querySelector('.flow-bar .flow-fill');
-    if (fillEl) fillEl.style.width = pct + '%';
-  })();
-
-  /* Sparkles effect */
-  function runSparklesOnce() {
-    const layer = els.sparkles;
-    if (!layer) return;
-    const MAX = 30;
-    const spawn = () => {
-      const star = document.createElement('div');
-      star.className = 'star';
-      star.textContent = '✦';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.top = Math.random() * 100 + '%';
-      star.style.opacity = '0';
-      star.style.transition = 'opacity 300ms ease, transform 1200ms ease';
-      layer.appendChild(star);
-      requestAnimationFrame(() => { star.style.opacity = '1'; star.style.transform = 'translateY(-6px)'; });
-      setTimeout(() => star.remove(), 1400);
-    };
-    const interval = setInterval(() => { if (layer.childElementCount < MAX) spawn(); }, 160);
-    setTimeout(() => { clearInterval(interval); setTimeout(() => layer.replaceChildren(), 1500); }, 3000);
-  }
-
-  /* Sign up/Sign in */
-  function showPanel(panelToShow, panelToHide, tabToSelect, tabToDeselect) {
-    if (panelToShow)  panelToShow.hidden = false;
-    if (panelToHide)  panelToHide.hidden = true;
-    tabToSelect?.classList.add('is-active');
-    tabToDeselect?.classList.remove('is-active');
-    tabToSelect?.setAttribute('aria-selected', 'true');
-    tabToDeselect?.setAttribute('aria-selected', 'false');
-  }
-
-  function activateTab(which) {
-    const isSignup = which === 'signup';
-    showPanel(isSignup ? els.panelSignup : els.panelSignin,
-              isSignup ? els.panelSignin : els.panelSignup,
-              isSignup ? els.tabSignup   : els.tabSignin,
-              isSignup ? els.tabSignin   : els.tabSignup);
-  }
-
-  on(els.tabSignup, 'click', () => activateTab('signup'));
-  on(els.tabSignin, 'click', () => activateTab('signin'));
-  $$('button[data-switch]').forEach(btn => on(btn, 'click', () => activateTab(btn.getAttribute('data-switch'))));
-
-  /* Show/Hide password */
-  on(document, 'click', (e) => {
-    const btn = e.target.closest('button[data-toggle]');
-    if (!btn) return;
-    e.preventDefault();
-    const id = btn.getAttribute('data-toggle');
-    const input = id ? document.getElementById(id) : null;
-    if (!input) return;
-
-    const isHidden = input.type === 'password';
-    const start = input.selectionStart, end = input.selectionEnd;
-    try { input.type = isHidden ? 'text' : 'password'; }
-    catch {
-      const clone = input.cloneNode(true);
-      clone.type = isHidden ? 'text' : 'password';
-      input.parentNode.replaceChild(clone, input);
-    }
-    btn.textContent = isHidden ? 'Hide' : 'Show';
-    btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-    btn.setAttribute('aria-pressed', String(isHidden));
-    setTimeout(() => {
-      const target = id && document.getElementById(id);
-      target?.focus();
-      if (start != null && end != null && target?.setSelectionRange) {
-        try { target.setSelectionRange(start, end); } catch {}
-      }
-    }, 0);
-  });
-
-  /* Username validation & availability */
-  function validUsernameFormat(u) {
-    if (!u) return false;
-    if (u.length < 3 || u.length > 24) return false;
-    return /^[a-zA-Z0-9_.]+$/.test(u);
-  }
-
-  async function checkUsername(u) {
-    u = String(u ?? '').trim();
-    if (!u) return setText(els.usernameHint, '');
-    if (!validUsernameFormat(u)) return setText(els.usernameHint, 'Usernames are 3–24 chars: letters, numbers, . or _');
-    if (!window.FirebaseAPI?.isUsernameAvailable) return; // skip if API not wired
-    try {
-      const res = await window.FirebaseAPI.isUsernameAvailable(u);
-      const ok = !!(res?.available ?? res);
-      setText(els.usernameHint, ok ? '✓ Username is available' : 'That username is taken.');
-    } catch { setText(els.usernameHint, ''); }
-  }
-
-  const checkUsernameDebounced = debounce(checkUsername, 300);
-  on(els.suUsername, 'input', (e) => checkUsernameDebounced(String(e?.target?.value ?? '').trim()));
-
-  /* Password strength & confirmation */
-  const reqList = $('#su-reqs');
-  const reqLen  = reqList?.querySelector('[data-rule="len"]');
-  const reqMix  = reqList?.querySelector('[data-rule="mix"]');
-  const reqCase = reqList?.querySelector('[data-rule="case"]');
-  const suStrengthFill = $('#su-strength');
-
-  function scorePassword(pw) {
-    pw = toStr(pw); let s = 0;
-    if (pw.length >= 8) s++;
-    if (/[A-Za-z]/.test(pw) && /\d/.test(pw)) s++;
-    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
-    return s;
-  }
-
-  function updateReqs(pw) {
-    pw = toStr(pw);
-    reqLen?.classList.toggle('ok', pw.length >= 8);
-    reqMix?.classList.toggle('ok', /[A-Za-z]/.test(pw) && /\d/.test(pw));
-    reqCase?.classList.toggle('ok', /[a-z]/.test(pw) && /[A-Z]/.test(pw));
-  }
-
-  function updateStrength(pw) {
-    const s = scorePassword(pw);
-    if (suStrengthFill) suStrengthFill.style.width = `${(s / 3) * 100}%`;
-  }
-
-  function validateConfirm() {
-    const pw = toStr(els.suPassword?.value);
-    const conf = toStr(els.suConfirm?.value);
-    const ok = conf.length > 0 && conf === pw;
-    setText(els.confirmHint, ok ? 'Passwords match.' : (conf ? 'Passwords do not match.' : ''));
-    return ok;
-  }
-
-  on(els.suPassword, 'input', (e) => { const pw = toStr(e?.target?.value); updateReqs(pw); updateStrength(pw); validateConfirm(); });
-  on(els.suConfirm,  'input', validateConfirm);
-
-  function showAuthCard(force = false) {
-    if (onboardingLocked && !force) return; // only block when not forced
-    if (els.authRoot) els.authRoot.hidden = false;
-    if (els.prefsRoot) els.prefsRoot.hidden = true;
-  }
-
-  function openOnboardingHobbies() {
-    onboardingLocked = true;
-    if (els.authRoot) els.authRoot.hidden = true;
-    if (els.prefsRoot) els.prefsRoot.hidden = false;
-    if (els.stepHobbies) els.stepHobbies.hidden = false;
-    if (els.stepGenres)  els.stepGenres.hidden  = true;
-    els.prefsRoot?.querySelector('#hobbyChoices .chip')?.focus();
-  }
-
-  on($('#panel-signup'), 'submit', async (e) => {
-    e.preventDefault();
-    const username = val(els.suUsername);
-    const email    = val(els.suEmail);
-    const pw       = toStr(els.suPassword?.value);
-
-    const strong = scorePassword(pw) >= 3;
-    const match  = validateConfirm();
-    const termsOK = $('#su-terms') ? !!$('#su-terms').checked : true;
-
-    if (!strong || !match || !termsOK) return setText(els.suStatus, 'Please complete all requirements.');
-
-    if (els.suSubmit) els.suSubmit.disabled = true;
-    setText(els.suStatus, 'Creating your account…');
-    openOnboardingHobbies();
-
-    try {
-      let user;
-      if (window.FirebaseAPI?.signUp) {
-        user = await window.FirebaseAPI.signUp(email, pw, { username });
-      } else {
-        await new Promise((r) => setTimeout(r, 900));
-        user = { email };
-      }
-      setText(els.suStatus, `Welcome, ${user.email ?? 'reader'}!`);
-    } catch (err) {
-      setText(els.suStatus, err?.message ?? 'Sign-up failed.');
-      showAuthCard();
-    } finally {
-      if (els.suSubmit) els.suSubmit.disabled = false;
-    }
-  });
-
-  on($('#panel-signin'), 'submit', async (e) => {
-    e.preventDefault();
-    const email = val(els.siEmail);
-    const pw    = toStr(els.siPassword?.value);
-
-    setText(els.siStatus, pw ? 'Signing you in…' : 'Enter your password.');
-    if (!pw) return;
-
-    if (els.siSubmit) els.siSubmit.disabled = true;
-    try {
-      let user;
-      if (window.FirebaseAPI?.signIn) {
-        user = await window.FirebaseAPI.signIn(email, pw);
-      } else {
-        await new Promise((r) => setTimeout(r, 700));
-        user = { email };
-      }
-      setText(els.siStatus, `Welcome back, ${user.email ?? 'reader'}!`);
-    } catch (err) {
-      setText(els.siStatus, err?.message ?? 'Could not sign in.');
-    } finally {
-      if (els.siSubmit) els.siSubmit.disabled = false;
-    }
-  });
-
-  /* Preferences flow (Hobbies - Genres - Avatars) */
-  function setStep(n) {
-    if (els.stepHobbies)  els.stepHobbies.hidden  = n !== 1;
-    if (els.stepGenres)   els.stepGenres.hidden   = n !== 2;
-    if (els.stepAvatars)  els.stepAvatars.hidden  = n !== 4; // keeping numbering to match UI copy
-  }
-
-  function ensureProgressUI(stepRoot, countId, progressId, min) {
-    if (!stepRoot) return;
-    let progress = stepRoot.querySelector('.pref-progress');
-    if (!progress) {
-      progress = document.createElement('div');
-      progress.className = 'pref-progress';
-      progress.innerHTML = `
-        <span id="${countId}" class="pref-count">Selected: 0/${min}</span>
-        <div class="pill"><div id="${progressId}" class="pill-fill" style="width:0%"></div></div>
-      `;
-      const chips = stepRoot.querySelector('.chip-group');
-      (chips && chips.parentNode ? chips.parentNode : stepRoot).insertBefore(progress, chips || stepRoot.firstChild);
-    } else {
-      const label = progress.querySelector(`#${countId}`);
-      if (label) label.textContent = `Selected: 0/${min}`;
-    }
-  }
-
-  function initChipGroup(group, opts = {}) {
-    if (!group) return { values: [], max: 0 };
-    const rawMax = opts.max === Infinity ? Infinity : (group.dataset.max || String(opts.max ?? 5));
-    const max = rawMax === Infinity ? Infinity : parseInt(String(rawMax), 10);
-    const min = parseInt(String(opts.min ?? 0), 10);
-    const values = new Set();
-
-    const countEl = opts.countEl || null;
-    const fillEl  = opts.fillEl  || null;
-    const nextBtn = opts.nextBtn || null;
-
-    function updateProgress() {
-      if (countEl) setText(countEl, `Selected: ${values.size}/${min}`);
-      if (fillEl && min > 0) fillEl.style.width = `${Math.min(100, (values.size / min) * 100)}%`;
-      if (nextBtn) nextBtn.disabled = values.size < min;
-    }
-    updateProgress();
-
-    on(group, 'click', (e) => {
-      const btn = e.target.closest('.chip');
-      if (!btn) return;
-      const v = btn.dataset.value; if (!v) return;
-      if (btn.classList.contains('selected')) {
-        btn.classList.remove('selected'); values.delete(v);
-      } else if (max === Infinity || values.size < max) {
-        btn.classList.add('selected'); values.add(v);
-        const map = group.id === 'genreChoices' ? GENRE_EMOJI : HOBBY_EMOJI;
-        popEmojiFrom(btn, map[v] || '✨');
-      }
-      updateProgress();
-    });
-
-    return { get values() { return Array.from(values); }, min, max };
-  }
-
-  if (els.nextToGenres) els.nextToGenres.disabled = true;
-  const hobbies = initChipGroup(els.hobbyChoices, {
-    min: MIN_HOBBIES,
-    max: Infinity,
-    countEl: els.hobbyCount,
-    fillEl: els.hobbyProgress,
-    nextBtn: els.nextToGenres,
-  });
-
-  on(els.nextToGenres, 'click', (e) => {
-    e.preventDefault();
-    if (hobbies.values.length >= MIN_HOBBIES) {
-      ensureProgressUI(els.stepGenres, 'genreCount', 'genreProgress', MIN_GENRES);
-      if (!window.__genresInitDone) {
-        window.__genresInitDone = true;
-        if (els.savePrefs) els.savePrefs.disabled = true;
-        window.__genresGroup = initChipGroup(els.genreChoices, {
-          min: MIN_GENRES,
-          max: Infinity,
-          countEl: els.genreCount,
-          fillEl: els.genreProgress,
-          nextBtn: els.savePrefs,
-        });
-      }
-      setStep(2);
-      els.stepGenres?.querySelector('.pref-title')?.focus?.();
-      els.stepGenres?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      console.log('Switched to Genres:', { hobbiesChosen: hobbies.values.length });
-    }
-  });
-
-  (function initGenresJustInCase() {
-    ensureProgressUI(els.stepGenres, 'genreCount', 'genreProgress', MIN_GENRES);
-    if (!window.__genresInitDone) {
-      window.__genresInitDone = true;
-      if (els.savePrefs) els.savePrefs.disabled = true;
-      window.__genresGroup = initChipGroup(els.genreChoices, {
-        min: MIN_GENRES,
-        max: Infinity,
-        countEl: els.genreCount,
-        fillEl: els.genreProgress,
-        nextBtn: els.savePrefs,
-      });
-    }
-  })();
-
-  on(els.backToHobbies, 'click', () => setStep(1));
-
-  /* Avatars */
-  function goToAvatars() {
-    setStep(4);
-
-    const grid = els.avatarChoices;
-    const hero = document.getElementById('avatarHeroEmoji');
-
-    if (grid && hero) {
-      const firstFree = grid.querySelector('.avatar-card:not(.is-locked) .emoji');
-      if (firstFree) {
-        hero.textContent = firstFree.textContent.trim();
-        hero.classList.remove('animate');
-        void hero.offsetWidth;
-        hero.classList.add('animate');
-      }
-    }
-  }
-
-  (() => {
-    const avatarGrid  = els.avatarChoices;
-    const heroEmoji   = document.getElementById('avatarHeroEmoji');
-    const continueBtn = els.finishBtn;
-
-    if (!avatarGrid || !continueBtn) return; 
-
-    let selectedAvatarId = null;
-
-    avatarGrid.addEventListener('click', (e) => {
-      const card = e.target.closest('.avatar-card');
-      if (!card || card.classList.contains('is-locked')) return; 
-
-      avatarGrid.querySelectorAll('.avatar-card').forEach(btn => {
-        btn.classList.remove('selected');
-        btn.setAttribute('aria-pressed', 'false');
-      });
-
-      card.classList.add('selected');
-      card.setAttribute('aria-pressed', 'true');
-      selectedAvatarId = card.dataset.id;
-
-      const emojiSpan = card.querySelector('.emoji');
-      if (emojiSpan && heroEmoji) {
-        heroEmoji.textContent = emojiSpan.textContent.trim();
-        heroEmoji.classList.remove('animate');
-        void heroEmoji.offsetWidth; 
-        heroEmoji.classList.add('animate');
-      }
-
-      continueBtn.disabled = false;
-    });
-
-    continueBtn.addEventListener('click', () => {
-      if (!selectedAvatarId) return;
-      try { localStorage.setItem('blurb:selectedAvatar', selectedAvatarId); } catch {}
-      window.location.href = 'homepage.html';
-    });
-  })();
-
-  on(els.backToGenres, 'click', (e) => {
-    e.preventDefault();
-    setStep(2);
-    els.stepGenres?.querySelector('.pref-title')?.focus?.();
-    els.stepGenres?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-  });
-
-  /* Save Genres - go to Avatars */
-  on(els.savePrefs, 'click', async () => {
-    const data = { hobbies: hobbies.values, genres: (window.__genresGroup?.values ?? []) };
-    if (els.savePrefs) els.savePrefs.disabled = true;
-    setText(els.prefsStatus, 'Saving your preferences…');
-    try {
-      if (window.FirebaseAPI?.savePreferences) await window.FirebaseAPI.savePreferences(data);
-      else await new Promise((r) => setTimeout(r, 800));
-      setText(els.prefsStatus, 'Preferences saved!');
-      goToAvatars();
-    } catch {
-      setText(els.prefsStatus, 'Could not save preferences.');
-    } finally {
-      if (els.savePrefs) els.savePrefs.disabled = false;
-    }
-  });
-
-  /* Back buttons */
-  on(els.prefsBack, 'click', () => {
-    onboardingLocked = false;      
-    showAuthCard(true);            
-    activateTab('signup');
-    els.suUsername?.focus();
-  });
-
-  activateTab('signup');
-  setStep(1);
-
-  window.FirebaseAPI?.onAuth?.((user) => { console.log('Auth state:', user ? `signed in as ${user.email}` : 'signed out'); });
-})();
-
-// Avatar
-document.addEventListener('DOMContentLoaded', () => {
-  const link = document.getElementById('userLink');
-  const img = document.getElementById('headerAvatar');  
-  const fallback = document.getElementById('avatarFallback');
-
-  if (!link || !fallback) return;
-
-  const emoji = localStorage.getItem('avatarEmoji');
-  const isAuthed = localStorage.getItem('isAuthed') === 'true';
-
-  if (isAuthed && emoji) {
-    fallback.textContent = emoji;
-    fallback.hidden = false;
-    if (img) img.hidden = true;
-    link.href = '/account';
-    link.setAttribute('aria-label', 'Your account');
   } else {
-    // default
-    fallback.textContent = '•';
-    fallback.hidden = false;
-    if (img) img.hidden = true;
-    link.href = '/login';
-    link.setAttribute('aria-label', 'Sign in');
+    books.unshift({
+      ...book,
+      categories: incomingCats
+    });
   }
-});
 
-/* Book suggestions */
+  saveBooks(books);
+  // redirect to Library and move the slider
+  switchToBooksTab();
+}
 
-const railEl = document.getElementById('bookRail');
-const leftBtn = document.querySelector('.rail-btn.left');
-const rightBtn = document.querySelector('.rail-btn.right');
+function renderBooks(books) {
+  const grid = document.getElementById('libraryGrid');
+  grid.innerHTML = '';
 
-const BOOKS = [
-  {
-    id: 'b1',
-    title: 'Blue Moon',
-    author: 'S. K. Hart',
-    pages: 320,
-    img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop',
-    tags: ['fantasy', 'adventure', 'art']
-  },
-  {
-    id: 'b2',
-    title: 'Crimson Notes',
-    author: 'Aria Vale',
-    pages: 280,
-    img: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=600&auto=format&fit=crop',
-    tags: ['mystery', 'music', 'realistic']
-  },
-  {
-    id: 'b3',
-    title: 'Neon Court',
-    author: 'Kai March',
-    pages: 410,
-    img: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=600&auto=format&fit=crop',
-    tags: ['scifi', 'gaming', 'graphic']
-  },
-  {
-    id: 'b4',
-    title: 'Trail & Tide',
-    author: 'Juno Park',
-    pages: 350,
-    img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop',
-    tags: ['adventure', 'nature', 'travel']
-  },
-  {
-    id: 'b5',
-    title: 'Shadow Sidelanes',
-    author: 'M. Reyes',
-    pages: 265,
-    img: 'https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=600&auto=format&fit=crop',
-    tags: ['sports', 'mystery', 'fitness']
+  books.forEach((b, idx) => {
+    // ensure numeric + sane defaults
+    b.currentPage = Number.isFinite(Number(b.currentPage)) ? Number(b.currentPage) : 0;
+    const parsedPages = parseInt(b.pages, 10);
+    b.pages = Number.isFinite(parsedPages) && parsedPages > 0 ? parsedPages : null;
+
+    const percent = b.pages ? Math.min(100, Math.round((b.currentPage / b.pages) * 100)) : 0;
+
+    const card = document.createElement('article');
+    card.className = 'bookcard';
+
+    const coverHtml = b.cover
+      ? `<img src="${b.cover}" alt="" loading="lazy" />`
+      : `<div class="cover-fallback">${escapeHtml(b.emoji || '📕')}</div>`;
+
+    card.innerHTML = `
+      <div class="bookcard__cover">${coverHtml}</div>
+
+      <div class="bookcard__body">
+        <div class="bookcard__head">
+          <h3 class="bookcard__title">${escapeHtml(b.title || 'Untitled')}</h3>
+          <button class="bookcard__fav" type="button" aria-label="Favorite">♡</button>
+        </div>
+
+        <p class="bookcard__author">${escapeHtml(b.author || '')}</p>
+        ${b.pages
+          ? `<p class="bookcard__pages" id="pages-${idx}">${b.pages} Pages</p>`
+          : `<p class="bookcard__pages" id="pages-${idx}" hidden></p>`}
+
+        <div class="bookcard__chips">
+          ${(b.categories || []).slice(0, 4).map(c => `
+            <span class="chip chip--yellow">${escapeHtml(c)}</span>
+          `).join('')}
+        </div>
+
+        <div class="bookcard__actions">
+          <button class="btn-log" type="button" data-log-index="${idx}">Log Reading</button>
+          <div class="bookcard__progress" id="progress-${idx}">${percent}% Read</div>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  // delegate “Log Reading” clicks
+  grid.querySelectorAll('[data-log-index]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const i = Number(e.currentTarget.dataset.logIndex);
+      openLogModal(i);
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function updateEmptyState(books) {
+  const empty = document.getElementById('emptyState');
+  empty.hidden = books.length > 0;
+}
+
+// ---------- panes ----------
+function showBooksPane() {
+  const books = getBooks();
+  renderBooks(books);
+  updateEmptyState(books);
+  const addPane = document.getElementById('addPane');
+  if (addPane) addPane.hidden = true;
+  document.getElementById('libraryGrid').hidden = false;
+  document.body.classList.remove('is-add-mode');
+}
+
+function showAddPane() {
+  const addPane = document.getElementById('addPane');
+  if (addPane) addPane.hidden = false;
+  document.getElementById('libraryGrid').hidden = true;
+  document.getElementById('emptyState').hidden = true;
+  document.body.classList.add('is-add-mode');
+
+  // force sub slider to re-measure AFTER it becomes visible
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => refreshSubSegbarSlider());
+  });
+}
+
+/* ---------- simple modal for ISBN help ---------- */
+function ensureIsbnModal() {
+  if (document.getElementById('isbnHelpModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'isbnHelpModal';
+  modal.className = 'modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="modal__backdrop" data-close="true"></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="isbnHelpTitle" tabindex="-1">
+      <button class="modal__close" type="button" aria-label="Close" data-close="true">×</button>
+      <h2 id="isbnHelpTitle">Where to find the ISBN</h2>
+      <div class="modal__content">
+        <p><strong>ISBN</strong> is a 10 or 13-digit code that uniquely identifies a book.</p>
+        <ul>
+          <li>On the <strong>back cover</strong> near the barcode (most common).</li>
+          <li>On the book’s <strong>copyright page</strong> inside the front.</li>
+          <li>Sometimes on the dust jacket near the price.</li>
+        </ul>
+        <p>Examples: <code>9780307474278</code> (ISBN-13) or <code>0307474275</code> (ISBN-10).</p>
+        <p>You can type digits without hyphens.</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Close on backdrop/close button
+  modal.addEventListener('click', (e) => {
+    if (e.target.dataset.close === 'true') closeIsbnModal();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeIsbnModal();
+  });
+}
+
+function openIsbnModal() {
+  ensureIsbnModal();
+  const modal = document.getElementById('isbnHelpModal');
+  if (!modal) return;
+  modal.removeAttribute('aria-hidden');
+  document.body.classList.add('modal-open');
+  modal.querySelector('.modal__dialog')?.focus();
+}
+
+function closeIsbnModal() {
+  const modal = document.getElementById('isbnHelpModal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+/* ---------- NEW: scanner modal (flex header) ---------- */
+function ensureScanModal() {
+  if (document.getElementById('scanModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'scanModal';
+  modal.className = 'modal';
+  modal.setAttribute('aria-hidden', 'true');
+
+  modal.innerHTML = `
+    <div class="modal__backdrop" data-close="true"></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="scanTitle" tabindex="-1">
+      <div class="modal__header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
+        <h2 id="scanTitle" style="margin:0;">Scan the barcode</h2>
+        <button class="modal__close" type="button" aria-label="Close" data-close="true"
+          style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:none;border:0;cursor:pointer;font-size:22px;line-height:1;">
+          ×
+        </button>
+      </div>
+
+      <div id="scannerViewport" style="width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;background:#000;"></div>
+      <p id="scanStatus" style="margin-top:8px;color:#666" aria-live="polite"></p>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Close on backdrop / X
+  modal.addEventListener('click', (e) => {
+    if (e.target.dataset.close === 'true') {
+      try { stopScanner(); } catch {}
+      closeScanModal();
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { try { stopScanner(); } catch {} closeScanModal(); }
+  });
+}
+
+/* ---------- Log Reading modal ---------- */
+function ensureLogModal() {
+  if (document.getElementById('logModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'logModal';
+  modal.className = 'modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="modal__backdrop" data-close="true"></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="logTitle" tabindex="-1">
+      <button class="modal__close" type="button" aria-label="Close" data-close="true">×</button>
+
+      <h2 id="logTitle" style="text-align:center;margin:.2rem 0 .25rem;font-weight:900;">Log Reading Session</h2>
+      <p id="logSubtitle" style="text-align:center;margin:.1rem 0 1rem;font-style:italic;color:#555"></p>
+
+      <div class="form-row" style="margin-top:6px;">
+        <label for="pagesReadInput">Pages Read</label>
+        <input id="pagesReadInput" type="number" min="1" inputmode="numeric" placeholder="e.g. 25" />
+      </div>
+
+      <!-- NEW: Total pages only shown when book has no total -->
+      <div class="form-row" id="totalRow" hidden>
+        <label for="totalPagesInput">Total Pages</label>
+        <input id="totalPagesInput" type="number" min="1" inputmode="numeric" placeholder="e.g. 374" />
+      </div>
+
+      <p id="currentPageNote" style="margin:.5rem 0 1rem;color:#666;font-weight:800;"></p>
+
+      <div class="actions" style="justify-content:flex-start;">
+        <button id="logConfirmBtn" class="btn">Log Book</button>
+        <button class="link" type="button" data-close="true">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // close on backdrop / × / Cancel
+  modal.addEventListener('click', (e) => {
+    if (e.target.dataset.close === 'true') closeLogModal();
+  });
+
+  // Esc + Enter handlers
+  document.addEventListener('keydown', (e) => {
+    if (!isLogModalOpen()) return;
+    if (e.key === 'Escape') closeLogModal();
+    if (e.key === 'Enter') document.getElementById('logConfirmBtn')?.click();
+  });
+}
+
+function isLogModalOpen() {
+  const m = document.getElementById('logModal');
+  return m && m.getAttribute('aria-hidden') !== 'true';
+}
+
+let _logBookIndex = null;
+
+function openLogModal(bookIndex) {
+  ensureLogModal();
+
+  _logBookIndex = bookIndex;
+  const books = getBooks();
+  const b = books[bookIndex];
+  if (!b) return;
+
+  const modal = document.getElementById('logModal');
+  modal.removeAttribute('aria-hidden');
+  document.body.classList.add('modal-open');
+
+  // hydrate content
+  document.getElementById('logSubtitle').textContent = b.title ? b.title : 'Selected Book';
+
+  const total = Number.isFinite(Number(b.pages)) ? Number(b.pages) : 0;
+  const curr  = Number.isFinite(Number(b.currentPage)) ? Number(b.currentPage) : 0;
+
+  document.getElementById('currentPageNote').textContent =
+    total ? `Current Page: ${curr}/${total}` : `Current Page: ${curr}`;
+
+  // show/hide total pages row
+  const totalRow = document.getElementById('totalRow');
+  const totalInput = document.getElementById('totalPagesInput');
+  if (total > 0) {
+    totalRow.hidden = true;
+    totalInput.value = '';
+  } else {
+    totalRow.hidden = false;
+    totalInput.value = '';
   }
-];
 
-function getUserPrefs() {
-  const hobbies = JSON.parse(localStorage.getItem('selectedHobbies') || '[]');
-  const genres = JSON.parse(localStorage.getItem('selectedGenres') || '[]');
+  const input = document.getElementById('pagesReadInput');
+  input.value = '';
+  input.focus();
+
+  // wire confirm handler (replace any old one)
+  const confirm = document.getElementById('logConfirmBtn');
+  confirm.replaceWith(confirm.cloneNode(true));
+  const confirmNew = document.getElementById('logConfirmBtn');
+  confirmNew.addEventListener('click', commitLogReading);
+}
+
+function closeLogModal() {
+  const modal = document.getElementById('logModal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+  _logBookIndex = null;
+}
+
+function commitLogReading() {
+  const amt = parseInt(document.getElementById('pagesReadInput').value, 10);
+  if (!Number.isFinite(amt) || amt <= 0) {
+    document.getElementById('pagesReadInput').focus();
+    return;
+  }
+
+  const books = getBooks();
+  const b = books[_logBookIndex];
+  if (!b) return;
+
+  // resolve total pages
+  let total = Number.isFinite(Number(b.pages)) ? Number(b.pages) : null;
+  if (!total) {
+    const enteredTotal = parseInt(document.getElementById('totalPagesInput').value, 10);
+    if (!Number.isFinite(enteredTotal) || enteredTotal <= 0) {
+      document.getElementById('totalPagesInput')?.focus();
+      return;
+    }
+    total = enteredTotal;
+    b.pages = total; // persist for future
+  }
+
+  const prev = Number.isFinite(Number(b.currentPage)) ? Number(b.currentPage) : 0;
+  const next = Math.min(total, prev + amt);
+  b.currentPage = next;
+
+  saveBooks(books);
+
+  // Update UI without full re-render
+  const pct = Math.min(100, Math.round((next / total) * 100));
+  const progressEl = document.getElementById(`progress-${_logBookIndex}`);
+  if (progressEl) progressEl.textContent = `${pct}% Read`;
+
+  const pagesEl = document.getElementById(`pages-${_logBookIndex}`);
+  if (pagesEl) {
+    pagesEl.textContent = `${total} Pages`;
+    pagesEl.hidden = false;
+  }
+
+  closeLogModal();
+}
+
+function openScanModal() {
+  ensureScanModal();
+  const modal = document.getElementById('scanModal');
+  if (!modal) return;
+
+  // Safety re-apply in case DOM is rebuilt
+  const btn = modal.querySelector('.modal__close');
+  if (btn) {
+    Object.assign(btn.style, {
+      position: 'absolute',
+      top: '14px',
+      right: '14px',
+      left: 'auto',
+      fontSize: '22px',
+      lineHeight: '1',
+      background: 'none',
+      border: '0',
+      padding: '4px',
+      cursor: 'pointer',
+      zIndex: '2'
+    });
+  }
+
+  modal.removeAttribute('aria-hidden');
+  document.body.classList.add('modal-open');
+  modal.querySelector('.modal__dialog')?.focus();
+}
+
+function closeScanModal() {
+  const modal = document.getElementById('scanModal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+/* ---------- Google Books lookup helpers ---------- */
+function normalizeDigits(s) {
+  return String(s || '').replace(/\D/g, '');
+}
+
+function toIsbnQuery(code) {
+  const clean = normalizeDigits(code);
+  // Accept EAN-13 starting 978/979, or pass-through others (UPC often maps to books too)
+  return clean || code;
+}
+
+async function fetchBookByIsbn(code) {
+  const q = toIsbnQuery(code);
+  const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(q)}&maxResults=1`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Google Books API error');
+  const data = await res.json();
+  const item = data.items?.[0];
+  const v = item?.volumeInfo;
+  if (!v) return null;
+
+  // Prefer https covers
+  const image = v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '';
+  const httpsImage = image ? image.replace('http://', 'https://') : '';
 
   return {
-    hobbies: hobbies.map(s => s.toLowerCase()),
-    genres: genres.map(s => s.toLowerCase())
+    googleId: item.id,
+    isbn: q,
+    title: v.title || '',
+    author: (v.authors && v.authors.join(', ')) || '',
+    pages: v.pageCount || null,
+    publisher: v.publisher || '',
+    publishedDate: v.publishedDate || '',
+    categories: v.categories || [],
+    language: v.language || '',
+    cover: httpsImage
   };
 }
 
-function scoreBook(book, prefs) {
-  const { hobbies, genres } = prefs;
-  let score = 0;
-  let matched = [];
+/* ---------- Quagga integration (camera live stream) ---------- */
+let scanning = false;
+let lastDetectedAt = 0;
 
-  book.tags.forEach(tag => {
-    const t = tag.toLowerCase();
-    if (genres.includes(t)) { score += 2; matched.push(t); }
-    else if (hobbies.includes(t)) { score += 1; matched.push(t); }
+function setScanStatus(msg) {
+  const el = document.getElementById('scanStatus');
+  if (el) el.textContent = msg || '';
+}
+
+function startScanner() {
+  if (scanning) return;
+  if (typeof Quagga === 'undefined') {
+    alert('QuaggaJS not loaded. Include it on the page.');
+    return;
+  }
+  openScanModal();
+  const target = document.getElementById('scannerViewport');
+  if (!target) return;
+
+  scanning = true;
+  setScanStatus('Starting camera…');
+
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target,
+      constraints: {
+        facingMode: 'environment',
+        aspectRatio: { min: 1, ideal: 1.777, max: 2 }
+      }
+    },
+    locator: { patchSize: 'medium', halfSample: true },
+    numOfWorkers: navigator.hardwareConcurrency || 2,
+    frequency: 8,
+    decoder: {
+      readers: [
+        'ean_reader',     // EAN-13 (ISBN-13 likely 978/979)
+        'ean_8_reader',
+        'upc_reader',
+        'upc_e_reader'
+      ]
+    },
+    locate: true
+  }, (err) => {
+    if (err) {
+      console.error(err);
+      scanning = false;
+      setScanStatus('Camera failed to start. Check permissions/HTTPS.');
+      return;
+    }
+    Quagga.start();
+    setScanStatus('Camera ready — point at the barcode.');
   });
 
-  return { score, matched };
+  Quagga.onDetected(async (res) => {
+    const now = Date.now();
+    if (now - lastDetectedAt < 1200) return; // throttle duplicate frames
+    lastDetectedAt = now;
+
+    const raw = res?.codeResult?.code?.trim();
+    if (!raw) return;
+
+    setScanStatus(`Detected: ${raw}. Looking up the book…`);
+    stopScanner(); // stop as soon as we capture one good code
+
+    try {
+      const book = await fetchBookByIsbn(raw);
+      if (!book) {
+        setScanStatus('No book found for that code. Try again or use ISBN search.');
+        setTimeout(() => { setScanStatus(''); closeScanModal(); }, 900);
+        return;
+      }
+      addBookToLocalLibrary(book);
+      setScanStatus(`Added “${book.title}” ✅`);
+    } catch (e) {
+      console.error(e);
+      setScanStatus('Something went wrong adding the book.');
+    } finally {
+      setTimeout(() => { setScanStatus(''); closeScanModal(); }, 900);
+    }
+  });
 }
 
-function renderTile(book, matchedTags) {
-  const card = document.createElement('article');
-  card.className = 'book-tile';
+function stopScanner() {
+  try { Quagga.stop(); } catch {}
+  scanning = false;
+}
 
-  const cover = document.createElement('div');
-  cover.className = 'book-cover';
-  cover.style.backgroundImage = `url("${book.img}")`;
+/* ---------- Upload-photo → decodeSingle → add ---------- */
+async function onPhotoChosen(e) {
+  const file = e.target.files?.[0];
+  const status = document.querySelector('#uploadStatus');
+  if (!file) return;
 
-  const meta = document.createElement('div');
-  meta.className = 'book-meta';
-  meta.innerHTML = `
-    <h3>${book.title}</h3>
-    <p class="byline">by ${book.author}</p>
-    <p class="pages">${book.pages} pages</p>
-  `;
+  if (status) status.textContent = 'Reading barcode…';
 
-  const tags = document.createElement('div');
-  tags.className = 'tag-row';
+  const srcUrl = URL.createObjectURL(file);
 
-  const displayTags = matchedTags.length ? matchedTags : book.tags;
+  Quagga.decodeSingle(
+    {
+      src: srcUrl,
+      numOfWorkers: 0,
+      inputStream: { size: 800 },
+      decoder: { readers: ['ean_reader'] }
+    },
+    async (result) => {
+      URL.revokeObjectURL(srcUrl);
 
-  displayTags.forEach(tag => {
-    const chip = document.createElement('span');
-    chip.className = 'tag' + (matchedTags.includes(tag) ? '' : ' faded');
-    chip.textContent = tag;
-    tags.appendChild(chip);
+      const code = result && result.codeResult ? result.codeResult.code : null;
+      if (!code) {
+        if (status) status.textContent = '';
+        alert('Could not find an ISBN from the photo. Please enter the book manually.');
+        return;
+      }
+
+      if (status) status.textContent = `Found ISBN: ${code}. Looking up book…`;
+      try {
+        const book = await fetchBookByIsbn(code);
+        if (!book) {
+          if (status) status.textContent = '';
+          alert('No book found for that ISBN. Please enter the book manually.');
+          return;
+        }
+
+        addBookToLocalLibrary({
+          isbn: code,
+          title: book.title || '',
+          author: book.author || '',
+          pages: book.pages || null,
+          categories: book.categories || [],
+          cover: book.cover || ''
+        });
+
+        if (status) status.textContent = 'Added to your library!';
+      } catch (err) {
+        console.error(err);
+        if (status) status.textContent = '';
+        alert('There was a problem contacting Google Books. Please enter the book manually.');
+      }
+    }
+  );
+}
+
+/* ---------- initial render ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const books = getBooks();
+  renderBooks(books);
+  updateEmptyState(books);
+
+  mountMainSegbarSlider();
+  mountSubSegbarSlider();
+  mountExitButton();
+});
+
+/* ---------- main segbar (books / add / etc.) ---------- */
+function mountMainSegbarSlider() {
+  const segbar = document.querySelector('.segbar');
+  if (!segbar) return;
+
+  let slider = segbar.querySelector('.segbar__slider');
+  if (!slider) {
+    slider = document.createElement('div');
+    slider.className = 'segbar__slider';
+    slider.style.pointerEvents = 'none';
+    segbar.appendChild(slider);
+  }
+
+  const positionSlider = (btn) => {
+    const pr = segbar.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    slider.style.width = br.width + 'px';
+    slider.style.height = br.height + 'px';
+    slider.style.transform = `translate(${br.left - pr.left}px, ${br.top - pr.top}px)`;
+  };
+
+  let active = segbar.querySelector('.seg.is-active') || segbar.querySelector('.seg');
+  if (active) {
+    positionSlider(active);
+    if (active.id === 'seg-add') showAddPane();
+    else showBooksPane();
+  }
+
+  segbar.querySelectorAll('.seg').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn === active) return;
+
+      const prev = active;
+      const prevWasAdd = prev?.id === 'seg-add';
+      const nextIsAdd = btn.id === 'seg-add';
+
+      prev?.classList.remove('is-active');
+      prev?.setAttribute('aria-selected', 'false');
+
+      if (prevWasAdd && !nextIsAdd) {
+        document.body.classList.remove('is-add-mode');
+      }
+
+      segbar.classList.add('is-animating');
+      positionSlider(btn);
+
+      const onDone = () => {
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+        active = btn;
+
+        if (nextIsAdd) {
+          document.body.classList.add('is-add-mode');
+          showAddPane();
+        } else if (btn.id === 'seg-books') {
+          showBooksPane();
+        }
+
+        segbar.classList.remove('is-animating');
+      };
+
+      slider.addEventListener('transitionend', onDone, { once: true });
+    });
   });
 
-  card.append(cover, meta, tags);
-  return card;
+  window.addEventListener('resize', () => active && positionSlider(active), { passive: true });
 }
 
+/* ---------- sub segbar (camera / upload / keyboard) ---------- */
+function mountSubSegbarSlider() {
+  const segbar = document.querySelector('.segbar--sub');
+  if (!segbar) return;
 
-function populateRail() {
-  const prefs = getUserPrefs();
-  const scoredBooks = BOOKS.map(book => {
-    const { score, matched } = scoreBook(book, prefs);
-    return { book, score, matched };
+  // --- RENDERERS ------------------------------------------------------------
+  const hero = document.querySelector('#addPane .add-hero');
+
+  // helper to align hero
+  const setHeroAlign = (isLeft) => {
+    if (!hero) return;
+    hero.classList.toggle('align-left', !!isLeft);
+  };
+
+  const renderCamera = () => {
+    if (!hero) return;
+    setHeroAlign(false);            // centered
+    hero.innerHTML = `
+      <div class="big-icon solar--camera-bold"></div>
+      <p class="add-sub">Scan the barcode on the back of your book</p>
+      <button class="btn btn-dark" id="openCameraBtn" type="button">Open Camera</button>
+    `;
+    // Wire camera button -> scanner
+    const btn = hero.querySelector('#openCameraBtn');
+    btn?.addEventListener('click', () => {
+      ensureScanModal();
+      startScanner();
+    });
+  };
+
+  // Upload hero with proper IDs + event wiring
+  const renderUpload = () => {
+    if (!hero) return;
+    setHeroAlign(false); // centered
+    hero.innerHTML = `
+      <div class="big-icon big-upload" aria-hidden="true"></div>
+      <p class="add-sub">Upload a photo of the barcode<br/>on the back of your book</p>
+      <input id="photoInput" type="file" accept="image/*" hidden />
+      <button class="btn btn-dark" id="choosePhotoBtn" type="button">Upload Photo</button>
+      <p id="uploadStatus" class="status" style="margin:.6rem 0 0; color:#666;"></p>
+    `;
+
+    const fileInput = hero.querySelector('#photoInput');
+    const chooseBtn = hero.querySelector('#choosePhotoBtn');
+    chooseBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', onPhotoChosen);
+  };
+
+  const renderManual = () => {
+    if (!hero) return;
+    setHeroAlign(true);             // left-align the manual form
+    hero.innerHTML = `
+      <form id="manualForm" class="manual-form" novalidate>
+        <div class="form-row">
+          <label for="isbnInput">ISBN Number</label>
+          <div class="input-with-btn">
+            <input id="isbnInput" type="text" inputmode="numeric" placeholder="" />
+            <button id="isbnSearchBtn" class="btn btn-ghost" type="button">Search</button>
+          </div>
+          <a id="isbnHelp" class="link" href="#" aria-label="Where do I find the ISBN number?">Where do I find the ISBN number?</a>
+        </div>
+
+        <div class="divider-row" aria-hidden="true">
+          <span class="line"></span>
+          <span class="divider-text">Or enter manually</span>
+          <span class="line"></span>
+        </div>
+
+        <div class="form-row">
+          <label for="titleInput">Book Title</label>
+          <input id="titleInput" type="text" placeholder="" required />
+        </div>
+
+        <div class="form-row">
+          <label for="authorInput">Author</label>
+          <input id="authorInput" type="text" placeholder="" />
+        </div>
+
+        <div class="form-row">
+          <label for="pagesInput">Total Pages</label>
+          <input id="pagesInput" type="number" inputmode="numeric" min="1" placeholder="" />
+        </div>
+
+        <div class="form-actions">
+          <input id="coverInput" type="file" accept="image/*" hidden />
+          <button id="addCoverBtn" class="btn" type="button">Add Book Cover</button>
+          <button id="addBookBtn" class="btn btn-dark" type="submit">Add Book</button>
+        </div>
+      </form>
+    `;
+
+    // Wire actions
+    const form = hero.querySelector('#manualForm');
+    const coverInput = form.querySelector('#coverInput');
+
+    // ISBN help modal
+    form.querySelector('#isbnHelp').addEventListener('click', (e) => {
+      e.preventDefault();
+      openIsbnModal();
+    });
+
+    form.querySelector('#addCoverBtn').addEventListener('click', () => coverInput.click());
+
+    // ISBN search -> fetch from Google Books and add
+    form.querySelector('#isbnSearchBtn').addEventListener('click', async () => {
+      const isbn = normalizeDigits(form.querySelector('#isbnInput').value.trim());
+      if (!isbn) return form.querySelector('#isbnInput').focus();
+      try {
+        form.querySelector('#isbnSearchBtn').disabled = true;
+        const book = await fetchBookByIsbn(isbn);
+        if (!book) {
+          alert('No book found for that ISBN.');
+        } else {
+          addBookToLocalLibrary(book);
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error looking up that ISBN.');
+      } finally {
+        form.querySelector('#isbnSearchBtn').disabled = false;
+      }
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = form.querySelector('#titleInput').value.trim();
+      if (!title) { form.querySelector('#titleInput').focus(); return; }
+
+      const author = form.querySelector('#authorInput').value.trim();
+      const pages = parseInt(form.querySelector('#pagesInput').value, 10) || null;
+
+      // Save to localStorage the same way your grid expects, no cover if user didn't upload
+      addBookToLocalLibrary({ title, author, pages, emoji: '📘' });
+    });
+  };
+
+  // --------------------------------------------------------------------------
+
+  let slider = segbar.querySelector('.segbar__slider');
+  if (!slider) {
+    slider = document.createElement('div');
+    slider.className = 'segbar__slider';
+    segbar.appendChild(slider);
+  }
+
+  const position = (btn) => {
+    const pr = segbar.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    slider.style.width = br.width + 'px';
+    slider.style.height = br.height + 'px';
+    slider.style.transform = `translate(${br.left - pr.left}px, ${br.top - pr.top}px)`;
+  };
+
+  let active = segbar.querySelector('.seg.is-active') || segbar.querySelector('.seg');
+  if (active) {
+    position(active);
+    // Ensure hero matches whichever tab is active on load
+    if (active.id === 'add-camera') renderCamera();
+    else if (active.id === 'add-upload') renderUpload();
+    else renderManual();
+  }
+
+  segbar.querySelectorAll('.seg').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn === active) return;
+
+      const prev = active;
+
+      // remove the old active state BEFORE sliding
+      prev?.classList.remove('is-active');
+      prev?.setAttribute('aria-selected','false');
+
+      position(btn);
+
+      // wait until slide completes, THEN finalize active state + render hero
+      const onDone = () => {
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected','true');
+        active = btn;
+
+        if (btn.id === 'add-camera') renderCamera();
+        else if (btn.id === 'add-upload') renderUpload();
+        else renderManual();
+      };
+
+      slider.addEventListener('transitionend', onDone, { once: true });
+    });
   });
 
-  const matches = scoredBooks.filter(sb => sb.score > 0).sort((a, b) => b.score - a.score);
-  const displayBooks = matches.length ? matches : scoredBooks.slice(0, 5);
+  window.addEventListener('resize', () => active && position(active), { passive: true });
+}
 
-  railEl.innerHTML = '';
-  displayBooks.forEach(({ book, matched }) => {
-    railEl.appendChild(renderTile(book, matched));
+// re-measure sub slider after pane becomes visible
+function refreshSubSegbarSlider() {
+  const segbar = document.querySelector('.segbar--sub');
+  if (!segbar) return;
+  const active = segbar.querySelector('.seg.is-active') || segbar.querySelector('.seg');
+  if (!active) return;
+
+  const pr = segbar.getBoundingClientRect();
+  const br = active.getBoundingClientRect();
+  const slider = segbar.querySelector('.segbar__slider');
+
+  slider.style.width = br.width + 'px';
+  slider.style.height = br.height + 'px';
+  slider.style.transform = `translate(${br.left - pr.left}px, ${br.top - pr.top}px)`;
+}
+
+// Make the Exit button work (leave Add pane, stop scanner, close modals)
+function mountExitButton() {
+  const btn =
+    document.getElementById('exitButton') ||
+    document.querySelector('[data-action="exit"]') ||
+    document.querySelector('.js-exit');
+
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    // Stop any active scanner and close modals
+    try { stopScanner?.(); } catch {}
+    try { closeScanModal?.(); } catch {}
+    try { closeIsbnModal?.(); } catch {}
+
+    // Return to the Books pane and sync slider/tab
+    switchToBooksTab();
   });
-
-  updateArrows();
 }
-
-function updateArrows() {
-  const maxScroll = railEl.scrollWidth - railEl.clientWidth;
-  leftBtn.disabled = railEl.scrollLeft <= 2;
-  rightBtn.disabled = railEl.scrollLeft >= maxScroll - 2;
-}
-
-function scrollByTiles(direction) {
-  const tileWidth = railEl.querySelector('.book-tile')?.clientWidth || 200;
-  railEl.scrollBy({ left: direction * (tileWidth + 12), behavior: 'smooth' });
-}
-
-leftBtn.addEventListener('click', () => scrollByTiles(-1));
-rightBtn.addEventListener('click', () => scrollByTiles(1));
-railEl.addEventListener('scroll', updateArrows);
-
-populateRail();
