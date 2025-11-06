@@ -590,14 +590,24 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 .seg.is-active{ background: transparent; color: var(--on-primary); }
 
 .segbar__slider{
-  position: absolute; border-radius: 999px; background: var(--juice); box-shadow: 0 6px 16px rgba(0,0,0,.12); z-index: 0;
-  transition: transform 260ms cubic-bezier(.2,.8,.2,1), width 200ms cubic-bezier(.2,.8,.2,1), height 200ms cubic-bezier(.2,.8,.2,1);
-  pointer-events: none; will-change: transform, width, height;
+  position: absolute;
+  border-radius: 999px;
+  transition:
+    transform 250ms cubic-bezier(.2,.6,.35,1),
+    width 250ms cubic-bezier(.2,.6,.35,1),
+    height 250ms cubic-bezier(.2,.6,.35,1);
+  will-change: transform, width, height;
+  background-color: var(--juice);
 }
+
 .seg svg{ width: 28px; height: 28px; }
 
 .segbar--sub{ position: relative; margin-top: 8px; }
 .segbar--sub .segbar__slider{ background: var(--heart); }
+
+.segbar, .segbar--sub { position: relative; }
+
+
 
 body.is-add-mode .seg#seg-add .stash--plus { filter: invert(1) brightness(2); }
 body.is-add-mode #seg-add { color: var(--on-primary); }
@@ -606,7 +616,6 @@ body.is-add-mode #seg-add { background: var(--juice); box-shadow: 0 6px 16px rgb
 
 .segbar.segbar--sub { grid-template-columns: repeat(3, minmax(0, 1fr)); position: relative; }
 .segbar--sub .segbar__slider { background: var(--bat); outline: 2px solid #fff; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
-
 
 /* =========================================================
    ICON SPRITES (library & add) — SVG DATA UNCHANGED
@@ -638,10 +647,22 @@ body.is-add-mode #seg-add { background: var(--juice); box-shadow: 0 6px 16px rgb
   width:96px; height:96px; opacity:.7; background-size:100% 100%; filter:grayscale(.15);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' fill-rule='evenodd' d='M9.778 21h4.444c3.121 0 4.682 0 5.803-.735a4.4 4.4 0 0 0 1.226-1.204c.749-1.1.749-2.633.749-5.697s0-4.597-.749-5.697a4.4 4.4 0 0 0-1.226-1.204c-.72-.473-1.622-.642-3.003-.702c-.659 0-1.226-.49-1.355-1.125A2.064 2.064 0 0 0 13.634 3h-3.268c-.988 0-1.839 .685-2.033 1.636c-.129 .635-.696 1.125-1.355 1.125c-1.38 .06-2.282 .23-3.003 .702A4.4 4.4 0 0 0 2.75 7.667C2 8.767 2 10.299 2 13.364s0 4.596.749 5.697c.324 .476 .74 .885 1.226 1.204C5.096 21 6.657 21 9.778 21M12 9.273c-2.301 0-4.167 1.831-4.167 4.09S9.7 17.456 12 17.456s4.167-1.832 4.167-4.091S14.3 9.273 12 9.273m0 1.636c-1.38 0-2.5 1.099-2.5 2.455c0 1.355 1.12 2.454 2.5 2.454s2.5-1.099 2.5-2.454s-1.12-2.455-2.5-2.455m4.722-.818c0-.452 .373-.818 .834-.818h1.11c.46 0 .834 .366 .834 .818a.826 .826 0 0 1-.833 .818h-1.111a.826 .826 0 0 1-.834-.818' clip-rule='evenodd'/%3E%3C/svg%3E");
 }
+
 .seg.is-active .iconoir--book,
 .seg.is-active .stash--plus,
 .seg.is-active .mdi--heart,
-.seg.is-active .tabler--award-filled{ filter: invert(1) brightness(2); }
+.seg.is-active .tabler--award-filled {
+  filter: invert(1) brightness(2);
+}
+
+
+.seg .iconoir--book,
+.seg .stash--plus,
+.seg .mdi--heart,
+.seg .tabler--award-filled {
+  transition: filter 0ms !important;
+  will-change: filter;
+}
 
 .line-md--upload{
   display:inline-block; width:28px; height:28px; background-repeat:no-repeat; background-size:100% 100%;
@@ -743,3 +764,180 @@ body.modal-open { overflow: hidden; }
 }
 .modal__close:hover,
 .modal__close:focus { opacity: 1; }
+
+/* =========================================================
+   AWARDS PANE (points + upcoming awards)
+   ========================================================= */
+
+#awardsPane[hidden] { display: none !important; }
+
+#awardsPane {
+  margin-top: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.awards-heading {
+  font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  margin: 6px 0 0;
+  color: var(--text-dark);
+}
+
+/* Total points card */
+.points-card{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--stroke);
+  box-shadow: 0 8px 22px rgba(0,0,0,.10);
+}
+.points-value{
+  min-width: 84px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 900;
+  font-size: 1.6rem;
+  text-align: center;
+}
+.points-label{
+  font-weight: 800;
+  color: var(--muted);
+}
+
+/* Upcoming awards list */
+.awards-upcoming{
+  background: #fff;
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.08);
+  padding: 14px;
+}
+.awards-subtitle{
+  margin: 4px 6px 10px;
+  font-weight: 900;
+  color: #3a3a3a;
+  font-size: 1.05rem;
+  letter-spacing: .2px;
+}
+.awards-list{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.award{
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 16px;
+  background: #fafafa;
+}
+.award__icon{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+.award__content{ display: grid; gap: 6px; align-content: start; }
+.award__title{
+  margin: 0;
+  font-weight: 900;
+  font-size: 1rem;
+  letter-spacing: .2px;
+}
+.award__desc{
+  margin: 0;
+  color: #666;
+  font-weight: 700;
+  font-size: .9rem;
+}
+
+/* Progress (native <progress>) */
+.award__progress{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.award__progress-text{
+  font-weight: 900;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+/* base */
+progress{
+  width: 100%;
+  height: 14px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+}
+progress::-webkit-progress-bar{
+  background: #f1f1f4;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  overflow: hidden;
+}
+progress::-webkit-progress-value{
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 240ms cubic-bezier(.2,.8,.2,1);
+}
+progress::-moz-progress-bar{
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+/* Make the award tab look active when selected (JS just toggles .is-active) */
+#seg-badges.is-active{
+  background: var(--juice);
+  color: var(--on-primary);
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+}
+#seg-badges.is-active .tabler--award-filled{ filter: invert(1) brightness(2); }
+
+/* small screens tweaks */
+@media (max-width: 420px){
+  .points-value{ min-width: 72px; font-size: 1.4rem; }
+  .award{ grid-template-columns: 36px 1fr; }
+  .award__icon{ width: 36px; height: 36px; }
+}
+
+/* while the slider is moving, don't paint the old active chip's visuals */
+/* keep background/box-shadow suppression, don't reset color */
+.segbar.is-animating .seg.is-active{
+  background: transparent !important;
+  box-shadow: none !important;
+  /* color: inherit;  ← delete this */
+}
+
+
+.segbar.is-animating .seg.is-active::before,
+.segbar.is-animating .seg.is-active::after {
+  content: none !important;
+}
+
+/* your existing filters already do this; keep them working during animation */
+.segbar.is-animating .seg.is-active .solar--camera-bold,
+.segbar.is-animating .seg.is-active .line-md--upload,
+.segbar.is-animating .seg.is-active .solar--keyboard-bold{
+  filter: invert(1) brightness(2);
+}

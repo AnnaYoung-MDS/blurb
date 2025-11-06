@@ -18,7 +18,7 @@
     <!-- Header -->
     <header class="site-header" role="banner">
       <div class="site-header__inner">
-        <a class="brand" href="/" aria-label="Blurb home">
+        <a class="brand" href="homepage.html" aria-label="Blurb home">
           <span class="brand-mark" aria-hidden="true">
             <!-- Logo -->
             <svg class="brand-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -86,6 +86,63 @@
         </div>
       </section>
 
+      <!-- 🏆 Awards pane (shown when clicking the award tab) -->
+      <section id="awardsPane" hidden aria-labelledby="awardsHeading" role="region">
+        <h2 id="awardsHeading" class="awards-heading">Awards &amp; Points</h2>
+
+        <!-- Total points summary -->
+        <div class="points-card" aria-live="polite">
+          <div class="points-value" id="pointsTotal">0</div>
+          <div class="points-label">Total points earned</div>
+        </div>
+
+        <!-- Upcoming awards (placeholders) -->
+        <div class="awards-upcoming">
+          <h3 class="awards-subtitle">Upcoming awards</h3>
+          <ul class="awards-list" role="list">
+            <!-- Placeholder Award 1 -->
+            <li class="award" data-award-id="award-pages-50">
+              <div class="award__icon" aria-hidden="true">🏅</div>
+              <div class="award__content">
+                <h4 class="award__title" id="award1-title">Page Turner I</h4>
+                <p class="award__desc" id="award1-desc">Read 50 pages</p>
+                <div class="award__progress">
+                  <progress id="award1-progress" value="20" max="50" aria-labelledby="award1-title" aria-describedby="award1-desc"></progress>
+                  <span class="award__progress-text"><span id="award1-current">20</span>/<span id="award1-max">50</span></span>
+                </div>
+              </div>
+            </li>
+
+            <!-- Placeholder Award 2 -->
+            <li class="award" data-award-id="award-days-7">
+              <div class="award__icon" aria-hidden="true">🎖️</div>
+              <div class="award__content">
+                <h4 class="award__title" id="award2-title">Streak Starter</h4>
+                <p class="award__desc" id="award2-desc">Read 7 days in a row</p>
+                <div class="award__progress">
+                  <progress id="award2-progress" value="3" max="7" aria-labelledby="award2-title" aria-describedby="award2-desc"></progress>
+                  <span class="award__progress-text"><span id="award2-current">3</span>/<span id="award2-max">7</span></span>
+                </div>
+              </div>
+            </li>
+
+            <!-- Placeholder Award 3 -->
+            <li class="award" data-award-id="award-books-3">
+              <div class="award__icon" aria-hidden="true">🏆</div>
+              <div class="award__content">
+                <h4 class="award__title" id="award3-title">Finisher</h4>
+                <p class="award__desc" id="award3-desc">Finish 3 books</p>
+                <div class="award__progress">
+                  <progress id="award3-progress" value="1" max="3" aria-labelledby="award3-title" aria-describedby="award3-desc"></progress>
+                  <span class="award__progress-text"><span id="award3-current">1</span>/<span id="award3-max">3</span></span>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <!-- End Awards pane -->
+
       <!-- Scanner -->
       <div id="scanModal" class="modal" aria-hidden="true" role="dialog" aria-label="Scan barcode">
         <div class="modal__backdrop" data-close></div>
@@ -111,6 +168,7 @@
           <span class="fluent--people-team-20-filled" aria-hidden="true"></span>
         </a>
       </nav>
+
     </main>
 
     <!-- Scripts -->
