@@ -1,16 +1,31 @@
-// ---------- data + rendering ----------
 function getBooks() {
   try {
     const raw = localStorage.getItem('libraryBooks');
-    return raw ? JSON.parse(raw) : [];
+    const arr = raw ? JSON.parse(raw) : [];
+    // normalize legacy data
+    return arr.map(b => {
+      if (typeof b.fav !== 'boolean') {
+        // coerce "true"/"false"/1/0/etc. to real booleans
+        b.fav = b.fav === true || b.fav === 'true' || b.fav === 1 || b.fav === '1';
+      }
+      return b;
+    });
   } catch {
     return [];
   }
 }
 
+
 function saveBooks(books) {
   localStorage.setItem('libraryBooks', JSON.stringify(books));
-  
+}
+
+// ensure every book has a stable id (for favorites toggling)
+function ensureBookId(b) {
+  if (!b.id) {
+    b.id = (crypto?.randomUUID?.() || ('id_' + Date.now() + '_' + Math.random().toString(36).slice(2)));
+  }
+  return b;
 }
 
 function addBookToLocalLibrary(book) {
@@ -28,24 +43,26 @@ function addBookToLocalLibrary(book) {
 
   if (idx >= 0) {
     // merge/upgrade existing book with any missing fields + categories
-    const existing = books[idx];
+    const existing = ensureBookId(books[idx]);
     const mergedCats = Array.from(new Set([...(existing.categories || []), ...incomingCats]));
-    books[idx] = {
+    books[idx] = ensureBookId({
       ...existing,
       ...book,
+      // keep existing fav unless explicitly overridden
+      fav: (typeof book.fav === 'boolean') ? book.fav : existing.fav,
       categories: mergedCats
-    };
-  } else {
-    books.unshift({
-      ...book,
-      categories: incomingCats
     });
+  } else {
+    books.unshift(ensureBookId({
+      ...book,
+      categories: incomingCats,
+      fav: !!book.fav
+    }));
   }
 
   saveBooks(books);
 
   triggerBookEmojiRain(); // 🎉 celebrate!
-
 
   // ⬅️ Use unified nav so segbar state + panes stay in sync
   if (typeof setActiveMainSeg === 'function') setActiveMainSeg('books');
@@ -77,7 +94,13 @@ function renderBooks(books) {
       <div class="bookcard__body">
         <div class="bookcard__head">
           <h3 class="bookcard__title">${escapeHtml(b.title || 'Untitled')}</h3>
-          <button class="bookcard__fav" type="button" aria-label="Favorite">♡</button>
+          <button
+            class="bookcard__fav"
+            type="button"
+            aria-label="Favorite"
+            aria-pressed="${b.fav ? 'true' : 'false'}"
+            data-book-id="${b.id || ''}"
+          >${b.fav ? '♥' : '♡'}</button>
         </div>
 
         <p class="bookcard__author">${escapeHtml(b.author || '')}</p>
@@ -108,7 +131,37 @@ function renderBooks(books) {
       openLogModal(i);
     });
   });
+
+  // delegate Favorite (heart) clicks
+  grid.querySelectorAll('.bookcard__fav').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.bookId;
+      if (!id) return;
+
+      const books = getBooks();
+      const i = books.findIndex(b => b.id === id);
+      if (i < 0) return;
+
+      books[i].fav = !books[i].fav;
+      saveBooks(books);
+
+      // update button UI instantly
+      btn.textContent = books[i].fav ? '♥' : '♡';
+      btn.setAttribute('aria-pressed', books[i].fav ? 'true' : 'false');
+
+      // If we're currently showing the Favorites pane and the user unfavorited,
+      // remove the card from view immediately.
+      if (document.body.classList.contains('is-favorites-mode') && !books[i].fav) {
+        btn.closest('.bookcard')?.remove();
+        const remaining = getBooks().filter(b => b.fav === true).length;
+
+        const emptyFavEl = document.getElementById('emptyState');
+        if (emptyFavEl) emptyFavEl.hidden = remaining > 0;
+      }
+    });
+  });
 }
+
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -128,6 +181,23 @@ function showBooksPane() {
   if (addPane) addPane.hidden = true;
   document.getElementById('libraryGrid').hidden = false;
   document.body.classList.remove('is-add-mode');
+  document.body.classList.remove('is-favorites-mode');
+}
+
+function getFavoriteBooks() {
+  return getBooks().filter(b => b.fav === true);
+}
+
+
+function showFavoritesPane() {
+  const favs = getFavoriteBooks();
+  renderBooks(favs);
+  updateEmptyState(favs);
+  const addPane = document.getElementById('addPane');
+  if (addPane) addPane.hidden = true;
+  document.getElementById('libraryGrid').hidden = false;
+  document.body.classList.remove('is-add-mode');
+  document.body.classList.add('is-favorites-mode');
 }
 
 function showAddPane() {
@@ -136,6 +206,7 @@ function showAddPane() {
   document.getElementById('libraryGrid').hidden = true;
   document.getElementById('emptyState').hidden = true;
   document.body.classList.add('is-add-mode');
+  document.body.classList.remove('is-favorites-mode');
 
   // force sub slider to re-measure AFTER it becomes visible
   requestAnimationFrame(() => {
@@ -387,24 +458,46 @@ function commitLogReading() {
 
   triggerReadingConfetti(); // 🎊 colourful confetti when logging pages
 
-
   closeLogModal();
 }
 
+/* ---------- helpers for segbar kind ---------- */
+function segKind(btn) {
+  const id = btn?.id || '';
+  const view = btn?.dataset?.view || '';
+  if (id === 'seg-add' || view === 'add') return 'add';
+  if (id === 'seg-fav' || view === 'fav' || view === 'favorites') return 'favorites';
+  return 'books';
+}
+
 /* ---------- unified main segbar navigation (DOM as source-of-truth) ---------- */
-function setActiveMainSeg(which /* 'books' | 'add' */) {
+function setActiveMainSeg(which /* 'books' | 'add' | 'favorites' */) {
   const segbar   = document.querySelector('.segbar');
   if (!segbar) {
     // Fallback: show panes without segbar present
-    if (which === 'books') showBooksPane(); else showAddPane();
+    if (which === 'favorites') showFavoritesPane();
+    else if (which === 'add') showAddPane();
+    else showBooksPane();
     return;
   }
 
-  const segBooks = document.getElementById('seg-books');
-  const segAdd   = document.getElementById('seg-add');
+  const segBooks = document.getElementById('seg-books') ||
+                   segbar.querySelector('[data-view="books"]') ||
+                   segbar.querySelector('.seg'); // fallback to first
+
+  const segAdd   = document.getElementById('seg-add') ||
+                   segbar.querySelector('[data-view="add"]');
+
+  const segFav   = document.getElementById('seg-fav') ||
+                   segbar.querySelector('[data-view="fav"],[data-view="favorites"]');
+
   const slider   = segbar.querySelector('.segbar__slider');
 
-  const next = which === 'books' ? segBooks : segAdd;
+  const next =
+    which === 'favorites' ? segFav :
+    which === 'add'       ? segAdd :
+                            segBooks;
+
   const curr = segbar.querySelector('.seg.is-active');
 
   if (curr !== next) {
@@ -424,8 +517,9 @@ function setActiveMainSeg(which /* 'books' | 'add' */) {
   }
 
   // show the pane to match selection
-  if (which === 'books') showBooksPane();
-  else showAddPane();
+  if (which === 'favorites') showFavoritesPane();
+  else if (which === 'add') showAddPane();
+  else showBooksPane();
 }
 
 /* ---------- Quagga integration (camera live stream) ---------- */
@@ -659,7 +753,9 @@ function mountMainSegbarSlider() {
   const initialActive = segbar.querySelector('.seg.is-active') || segbar.querySelector('.seg');
   if (initialActive) {
     positionSlider(initialActive);
-    if (initialActive.id === 'seg-add') showAddPane();
+    const kind = segKind(initialActive);
+    if (kind === 'add') showAddPane();
+    else if (kind === 'favorites') showFavoritesPane();
     else showBooksPane();
   }
 
@@ -679,7 +775,9 @@ function mountMainSegbarSlider() {
         btn.classList.add('is-active');
         btn.setAttribute('aria-selected', 'true');
 
-        if (btn.id === 'seg-add') showAddPane();
+        const kind = segKind(btn);
+        if (kind === 'add') showAddPane();
+        else if (kind === 'favorites') showFavoritesPane();
         else showBooksPane();
 
         segbar.classList.remove('is-animating');
