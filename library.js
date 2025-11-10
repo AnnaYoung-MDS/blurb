@@ -1,4 +1,3 @@
-// ---------- helpers ----------
 const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const setHidden = (el, hide) => { if (el) el.hidden = !!hide; };
@@ -7,7 +6,6 @@ const toInt = (v) => Number.parseInt(v, 10);
 const clampPct = (n) => Math.min(100, Math.max(0, Math.round(n)));
 const normalizeDigits = (s) => String(s || "").replace(/\D/g, "");
 
-// ---------- storage ----------
 function getBooks() {
   try {
     const raw = localStorage.getItem("libraryBooks");
@@ -32,24 +30,19 @@ function ensureBookId(b) {
   return b;
 }
 
-// ---------- awards config / storage ----------
 const AWARDS_DEF = [
-  // 📚 Reading Progress
   { id: "award-pages-100",  metric: "pagesRead",     goal: 100,  label: "Read 100 pages" },
   { id: "award-pages-500",  metric: "pagesRead",     goal: 500,  label: "Read 500 pages" },
   { id: "award-pages-1000", metric: "pagesRead",     goal: 1000, label: "Read 1,000 pages" },
 
-  // 🧩 Sessions / Library adds
   { id: "award-logs-20",    metric: "sessionLogs",   goal: 20,   label: "Log 20 reading sessions" },
   { id: "award-library-10", metric: "libraryAdds",   goal: 10,   label: "Add 10 books to your library" },
 
-  // 🧭 Variety & Discovery
   { id: "award-genre-3",    metric: "genreVariety",  goal: 3,    label: "Read 3 different genres" },
   { id: "award-fantasy-2",  metric: "fantasyBooks",  goal: 2,    label: "Finish 2 fantasy books" },
   { id: "award-romance-1",  metric: "romanceBooks",  goal: 1,    label: "Finish a romance novel" },
   { id: "award-mystery-2",  metric: "mysteryBooks",  goal: 2,    label: "Read 2 mystery or thriller books" },
 
-  // 🏅 Completion
   { id: "award-books-1",    metric: "finishedBooks", goal: 1,    label: "Finish your first book" },
   { id: "award-books-5",    metric: "finishedBooks", goal: 5,    label: "Finish 5 books" },
   { id: "award-books-10",   metric: "finishedBooks", goal: 10,   label: "Finish 10 books" },
@@ -64,7 +57,6 @@ function setEarnedAwards(map) {
   localStorage.setItem("blurb:awards-earned", JSON.stringify(map));
 }
 
-// ---------- books CRUD/render ----------
 function addBookToLocalLibrary(book) {
   const books = getBooks();
 
@@ -101,7 +93,6 @@ function addBookToLocalLibrary(book) {
   if (typeof setActiveMainSeg === "function") setActiveMainSeg("books");
   else showBooksPane();
 
-  // Track libraryAdds metric
   try {
     const stats = window.BlurbAwards?.getStats?.() || {};
     const nextAdds = Number(stats.libraryAdds || 0) + 1;
@@ -200,7 +191,6 @@ function escapeHtml(s) {
   );
 }
 
-// ---------- empty state ----------
 function updateEmptyState(books, context = "books") {
   const el = document.getElementById("emptyState");
   if (!el) return;
@@ -208,7 +198,6 @@ function updateEmptyState(books, context = "books") {
   setHidden(el, books.length > 0);
 }
 
-// ---------- panes ----------
 function showBooksPane() {
   const books = getBooks();
   renderBooks(books);
@@ -244,7 +233,7 @@ function showAddPane() {
   if (addPane) addPane.hidden = false;
   if (awardsPane) awardsPane.hidden = true;
   document.getElementById("libraryGrid").hidden = true;
-  document.getElementById("emptyState").hidden = true; // always hide in Add
+  document.getElementById("emptyState").hidden = true;
   document.body.classList.add("is-add-mode");
   document.body.classList.remove("is-favorites-mode");
   requestAnimationFrame(() => requestAnimationFrame(refreshSubSegbarSlider));
@@ -264,6 +253,7 @@ function setActiveMainSeg(which) {
   if (!segbar) {
     if (which === "favorites") showFavoritesPane();
     else if (which === "add") showAddPane();
+    else if (which === "awards") showAwardsPane();
     else showBooksPane();
     return;
   }
@@ -275,9 +265,14 @@ function setActiveMainSeg(which) {
     || segbar.querySelector('[data-view="add"]');
   const segFav = document.getElementById("seg-fav")
     || segbar.querySelector('[data-view="fav"],[data-view="favorites"]');
+  const segAwards = document.getElementById("seg-badges")
+    || segbar.querySelector('[data-view="awards"],[data-view="badges"]');
 
   const slider = segbar.querySelector(".segbar__slider");
-  const next = which === "favorites" ? segFav : which === "add" ? segAdd : segBooks;
+  const next = which === "favorites" ? segFav
+    : which === "add" ? segAdd
+    : which === "awards" ? segAwards
+    : segBooks;
   const curr = segbar.querySelector(".seg.is-active");
 
   if (curr !== next) {
@@ -300,7 +295,17 @@ function setActiveMainSeg(which) {
   else showBooksPane();
 }
 
-// ---------- scanner / image decode ----------
+async function ensureQuagga() {
+  if (window.Quagga) return;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://unpkg.com/quagga@0.12.1/dist/quagga.min.js";
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 let scanning = false;
 let lastDetectedAt = 0;
 let _onDetectedHandler = null;
@@ -350,28 +355,12 @@ function openScanModal() {
   ensureScanModal();
   const modal = document.getElementById("scanModal");
   if (!modal) return;
-
-  const btn = modal.querySelector(".modal__close");
-  if (btn) {
-    Object.assign(btn.style, {
-      position: "absolute",
-      top: "14px",
-      right: "14px",
-      left: "auto",
-      fontSize: "22px",
-      lineHeight: "1",
-      background: "none",
-      border: "0",
-      padding: "4px",
-      cursor: "pointer",
-      zIndex: "2",
-    });
-  }
-
   modal.removeAttribute("aria-hidden");
   document.body.classList.add("modal-open");
   modal.querySelector(".modal__dialog")?.focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
 
 function closeScanModal() {
   const modal = document.getElementById("scanModal");
@@ -380,15 +369,22 @@ function closeScanModal() {
   document.body.classList.remove("modal-open");
 }
 
-function startScanner() {
+async function startScanner() {
   if (scanning) return;
-  if (typeof Quagga === "undefined") {
-    alert("QuaggaJS not loaded. Include it on the page.");
-    return;
-  }
+
   openScanModal();
   const target = document.getElementById("scannerViewport");
   if (!target) return;
+
+  setScanStatus("Loading scanner…");
+
+  try {
+    await ensureQuagga();
+  } catch (e) {
+    console.error(e);
+    setScanStatus("Failed to load scanner library.");
+    return;
+  }
 
   scanning = true;
   setScanStatus("Starting camera…");
@@ -523,7 +519,6 @@ async function onPhotoChosen(e) {
   );
 }
 
-// ---------- modals ----------
 function ensureIsbnModal() {
   if (document.getElementById("isbnHelpModal")) return;
 
@@ -617,7 +612,7 @@ function isLogModalOpen() {
   return m && m.getAttribute("aria-hidden") !== "true";
 }
 
-let _logBookIndex = null; // kept for back-compat if something calls openLogModal(index)
+let _logBookIndex = null;
 let _logBookId = null;
 
 function openLogModalById(bookId) {
@@ -659,7 +654,6 @@ function openLogModalById(bookId) {
   document.getElementById("logConfirmBtn").addEventListener("click", commitLogReading);
 }
 
-// Legacy entry point using index; routes to ID version
 function openLogModal(bookIndex) {
   _logBookIndex = bookIndex;
   const books = getBooks();
@@ -710,7 +704,6 @@ function commitLogReading() {
   const finishedCats = finishedNow ? (Array.isArray(b.categories) ? b.categories : []) : [];
   _updateStatsAfterLog(amt, finishedNow, finishedCats);
 
-  // Re-render the current pane so cards & buttons stay in sync
   const isFavs = document.body.classList.contains("is-favorites-mode");
   if (isFavs) showFavoritesPane(); else showBooksPane();
 
@@ -718,7 +711,6 @@ function commitLogReading() {
   closeLogModal();
 }
 
-// ---------- segbars ----------
 function mountMainSegbarSlider() {
   const segbar = document.querySelector(".segbar");
   if (!segbar) return;
@@ -821,7 +813,7 @@ function mountSubSegbarSlider() {
     if (!hero) return;
     setHeroAlign(false);
     hero.innerHTML = `
-      <div class="big-icon big-upload" aria-hidden="true"></div>
+      <div class="big-icon line-md--upload" aria-hidden="true"></div>
       <p class="add-sub">Upload a photo of the barcode<br/>on the back of your book</p>
       <input id="photoInput" type="file" accept="image/*" hidden />
       <button class="btn btn-dark" id="choosePhotoBtn" type="button">Upload Photo</button>
@@ -992,7 +984,6 @@ function refreshSubSegbarSlider() {
   slider.style.transform = `translate(${br.left - pr.left}px, ${br.top - pr.top}px)`;
 }
 
-// ---------- exit button ----------
 function mountExitButton() {
   const btn =
     document.getElementById("exitButton") ||
@@ -1008,7 +999,6 @@ function mountExitButton() {
   });
 }
 
-// ---------- ISBN lookup ----------
 function toIsbnQuery(code) {
   const clean = normalizeDigits(code);
   return clean || code;
@@ -1041,7 +1031,6 @@ async function fetchBookByIsbn(code) {
   };
 }
 
-// ---------- fun effects ----------
 function triggerBookEmojiRain(opts = {}) {
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -1174,7 +1163,6 @@ function triggerReadingConfetti(opts = {}) {
   setTimeout(() => layer.remove(), maxLifetime + 220);
 }
 
-// ---------- award celebration ----------
 function showAwardToast(title, subtitle = "", opts = {}) {
   const {
     duration = 6000,
@@ -1265,12 +1253,10 @@ function checkAwardsUnlocks(prevStats, nextStats) {
   }
 }
 
-// ---------- favorites & stats ----------
 function getFavoriteBooks() {
   return getBooks().filter((b) => b && b.fav === true);
 }
 
-// Update stats after logging a session (pages + optional finished categories)
 function _updateStatsAfterLog(pagesAdded, finishedThisLog, finishedCategories = []) {
   const prev = window.BlurbAwards?.getStats?.() || {
     pagesRead: 0, finishedBooks: 0, sessionLogs: 0, libraryAdds: 0,
@@ -1280,38 +1266,36 @@ function _updateStatsAfterLog(pagesAdded, finishedThisLog, finishedCategories = 
 
   const stats = { ...prev };
 
-  // Pages & session count
   stats.pagesRead   = Math.max(0, (Number(stats.pagesRead) || 0) + (Number(pagesAdded) || 0));
   stats.sessionLogs = (Number(stats.sessionLogs) || 0) + 1;
 
-  // Finished books + genre tallies if finished this log
   if (finishedThisLog) {
     stats.finishedBooks = (Number(stats.finishedBooks) || 0) + 1;
 
     const cats = (Array.isArray(finishedCategories) ? finishedCategories : [])
       .map(String).map(s => s.toLowerCase());
 
-    // genre variety (unique genres encountered)
     const seen = new Set(Array.isArray(stats.genresSeen) ? stats.genresSeen.map(String) : []);
     cats.forEach(c => { if (c) seen.add(c); });
     stats.genresSeen   = Array.from(seen);
     stats.genreVariety = stats.genresSeen.length;
 
-    // simple heuristics by name
     if (cats.some(c => /fantasy/.test(c)))   stats.fantasyBooks = (Number(stats.fantasyBooks) || 0) + 1;
     if (cats.some(c => /romance/.test(c)))   stats.romanceBooks = (Number(stats.romanceBooks) || 0) + 1;
     if (cats.some(c => /(mystery|thriller|crime)/.test(c))) stats.mysteryBooks = (Number(stats.mysteryBooks) || 0) + 1;
   }
 
-  // Timestamp of last read (could be useful later)
   stats.lastReadISO = new Date().toISOString();
 
   window.BlurbAwards?.setStats?.(stats);
   checkAwardsUnlocks(prev, stats);
 }
 
-// ---------- awards pane (callable from anywhere) ----------
 function showAwardsPane() {
+  document.querySelectorAll(".segbar .seg.is-active")
+    .forEach(b => b.classList.remove("is-active"));
+  document.getElementById("seg-badges")?.classList.add("is-active");
+
   const libraryGrid = document.getElementById("libraryGrid");
   const addPane     = document.getElementById("addPane");
   const awardsPane  = document.getElementById("awardsPane");
@@ -1320,15 +1304,12 @@ function showAwardsPane() {
   if (libraryGrid) libraryGrid.hidden = true;
   if (addPane)     addPane.hidden     = true;
   if (awardsPane)  awardsPane.hidden  = false;
-  if (emptyState)  emptyState.hidden  = true; // never show “empty” msg on awards
+  if (emptyState)  emptyState.hidden  = true; 
 
-  // Global updater (defined in DOMContentLoaded)
   window.__blurbUpdateAwardsUI?.();
 }
 
-// ---------- boot ----------
 document.addEventListener("DOMContentLoaded", () => {
-  // Simple stats engine (points = pages)
   const PointsEngine = (() => {
     const POINTS_PER_PAGE = 1;
     function getUserStats() {
@@ -1368,7 +1349,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = PointsEngine.computeTotalPoints(stats);
     if (pointsTotalEl) pointsTotalEl.textContent = String(total);
 
-    // Auto-bind to any <li class="award" data-award-id="...">
     document.querySelectorAll("li.award[data-award-id]").forEach((li) => {
       const id   = li.getAttribute("data-award-id");
       const def  = AWARDS_DEF.find((a) => a.id === id);
@@ -1389,7 +1369,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // expose a stable updater + stats API
   window.__blurbUpdateAwardsUI = updateAwardsUI;
   window.BlurbAwards = {
     setStats(next) {
@@ -1402,13 +1381,11 @@ document.addEventListener("DOMContentLoaded", () => {
     getStats() { return PointsEngine.getUserStats(); }
   };
 
-  // initial paint
   const books = getBooks();
   renderBooks(books);
   updateEmptyState(books, "books");
   updateAwardsUI();
 
-  // mount UI behaviors
   mountMainSegbarSlider();
   mountSubSegbarSlider();
   mountExitButton();
