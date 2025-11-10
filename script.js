@@ -942,7 +942,6 @@ const BOOKS = [
   // 😂 Humor
   { id: 'nhu1', title: "The Absolutely True Diary of a Part-Time Indian", author: "Sherman Alexie", pages: 240, img: "assets/part-time-indian.jpg", tags: ['humor','coming-of-age','realistic'] },
   { id: 'nhu2', title: "The Field Guide to the North American Teenager", author: "Ben Philippe", pages: 372, img: "assets/field-guide-teenager.jpg", tags: ['humor','sarcasm','new-kid','realistic'] },
-  { id: 'nhu3', title: "No Good Deed", author: "Kara Connolly", pages: 352, img: "assets/no-good-deed.jpg", tags: ['humor','time-travel','medieval'] },
 
   // 🖋️ Fanfiction (adjacent)
   // (Skipping duplicates: Fangirl, Eliza and Her Monsters already present)
