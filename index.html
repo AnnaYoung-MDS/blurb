@@ -6,14 +6,15 @@
     <title>Blurb</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Nunito:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="theme-butter">
+
     <!-- Load -->
     <div class="page">
       <section id="splash" class="splash" aria-labelledby="app-name">
@@ -44,8 +45,9 @@
         <h2 id="authTitle" class="sr-only">Authentication</h2>
 
         <div class="tabs" role="tablist" aria-label="Authentication">
-          <button id="tab-signup" class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="panel-signup">Sign up</button>
-          <button id="tab-signin" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-signin">Sign in</button>
+          <button id="tab-signup" class="tab is-active" type="button" role="tab" aria-selected="true" tabindex="0" aria-controls="panel-signup">Sign up</button>
+          <button id="tab-signin" class="tab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-signin">Sign in</button>
+
         </div>
 
         <!-- Sign up -->
@@ -113,7 +115,7 @@
               <input id="si-remember" type="checkbox" />
               <span>Remember me</span>
             </label>
-            <a class="link" href="#" aria-disabled="true" tabindex="-1">Forgot?</a>
+            <button class="link" type="button" disabled aria-disabled="true">Forgot?</button>
           </div>
 
           <button id="si-submit" class="primary-btn" type="submit">Sign in</button>
@@ -155,28 +157,28 @@
             </div>
 
             <div id="hobbyChoices" class="chip-group" data-max="8">
-              <button class="chip" type="button" data-value="gaming">Gaming</button>
-              <button class="chip" type="button" data-value="music">Music</button>
-              <button class="chip" type="button" data-value="art">Art</button>
-              <button class="chip" type="button" data-value="sports">Sports</button>
-              <button class="chip" type="button" data-value="fashion">Fashion</button>
-              <button class="chip" type="button" data-value="coding">Coding</button>
-              <button class="chip" type="button" data-value="animals">Animals</button>
-              <button class="chip" type="button" data-value="writing">Writing</button>
-              <button class="chip" type="button" data-value="travel">Travel</button>
-              <button class="chip" type="button" data-value="movies">Movies/TV Shows</button>
-              <button class="chip" type="button" data-value="photography">Photography</button>
-              <button class="chip" type="button" data-value="baking">Baking/Cooking</button>
-              <button class="chip" type="button" data-value="dance">Dance</button>
-              <button class="chip" type="button" data-value="fitness">Fitness</button>
-              <button class="chip" type="button" data-value="makeup">Beauty</button>
-              <button class="chip" type="button" data-value="nature">Nature</button>
-              <button class="chip" type="button" data-value="boardgames">Board Games</button>
-              <button class="chip" type="button" data-value="streaming">Social Media</button>
+              <button class="chip" type="button" data-value="gaming" aria-pressed="false">Gaming</button>
+              <button class="chip" type="button" data-value="music" aria-pressed="false">Music</button>
+              <button class="chip" type="button" data-value="art" aria-pressed="false">Art</button>
+              <button class="chip" type="button" data-value="sports" aria-pressed="false">Sports</button>
+              <button class="chip" type="button" data-value="fashion" aria-pressed="false">Fashion</button>
+              <button class="chip" type="button" data-value="coding" aria-pressed="false">Coding</button>
+              <button class="chip" type="button" data-value="animals" aria-pressed="false">Animals</button>
+              <button class="chip" type="button" data-value="writing" aria-pressed="false">Writing</button>
+              <button class="chip" type="button" data-value="travel" aria-pressed="false">Travel</button>
+              <button class="chip" type="button" data-value="movies" aria-pressed="false">Movies/TV Shows</button>
+              <button class="chip" type="button" data-value="photography" aria-pressed="false">Photography</button>
+              <button class="chip" type="button" data-value="baking" aria-pressed="false">Baking/Cooking</button>
+              <button class="chip" type="button" data-value="dance" aria-pressed="false">Dance</button>
+              <button class="chip" type="button" data-value="fitness" aria-pressed="false">Fitness</button>
+              <button class="chip" type="button" data-value="makeup" aria-pressed="false">Beauty</button>
+              <button class="chip" type="button" data-value="nature" aria-pressed="false">Nature</button>
+              <button class="chip" type="button" data-value="boardgames" aria-pressed="false">Board Games</button>
+              <button class="chip" type="button" data-value="streaming" aria-pressed="false">Social Media</button>
             </div>
 
             <div class="actions">
-              <button id="nextToGenres" class="btn btn-primary" type="button" disabled>Continue</button>
+              <button id="nextToGenres" class="btn-primary" type="button" disabled>Continue</button>
             </div>
           </div>
         </div>
@@ -207,22 +209,22 @@
             </div>
 
             <div id="genreChoices" class="chip-group" data-max="9999">
-              <button class="chip" type="button" data-value="fantasy" title="Fantasy">Fantasy</button>
-              <button class="chip" type="button" data-value="romance" title="Romance">Romance</button>
-              <button class="chip" type="button" data-value="mystery" title="Mystery / Thriller">Mystery</button>
-              <button class="chip" type="button" data-value="dystopian" title="Dystopian">Dystopian</button>
-              <button class="chip" type="button" data-value="scifi" title="Science Fiction">Sci-Fi</button>
-              <button class="chip" type="button" data-value="graphic" title="Graphic Novels / Manga">Graphic Novels</button>
-              <button class="chip" type="button" data-value="horror" title="Horror">Horror</button>
-              <button class="chip" type="button" data-value="realistic" title="Realistic Fiction">Realistic Fiction</button>
-              <button class="chip" type="button" data-value="adventure" title="Adventure">Adventure</button>
-              <button class="chip" type="button" data-value="sports" title="Sports">Sports</button>
-              <button class="chip" type="button" data-value="contemporary-ya" title="Contemporary YA">Contemporary YA</button>
-              <button class="chip" type="button" data-value="paranormal" title="Paranormal">Paranormal</button>
-              <button class="chip" type="button" data-value="lgbtqia" title="LGBTQIA+">LGBTQIA+</button>
-              <button class="chip" type="button" data-value="humor" title="Humor">Humour</button>
-              <button class="chip" type="button" data-value="fanfiction" title="Fanfiction">Fanfiction</button>
-              <button class="chip" type="button" data-value="poetry" title="Poetry / Spoken Word">Poetry</button>
+              <button class="chip" type="button" data-value="fantasy" title="Fantasy" aria-pressed="false">Fantasy</button>
+              <button class="chip" type="button" data-value="romance" title="Romance" aria-pressed="false">Romance</button>
+              <button class="chip" type="button" data-value="mystery" title="Mystery / Thriller" aria-pressed="false">Mystery</button>
+              <button class="chip" type="button" data-value="dystopian" title="Dystopian" aria-pressed="false">Dystopian</button>
+              <button class="chip" type="button" data-value="scifi" title="Science Fiction" aria-pressed="false">Sci-Fi</button>
+              <button class="chip" type="button" data-value="graphic" title="Graphic Novels / Manga" aria-pressed="false">Graphic Novels</button>
+              <button class="chip" type="button" data-value="horror" title="Horror" aria-pressed="false">Horror</button>
+              <button class="chip" type="button" data-value="realistic" title="Realistic Fiction" aria-pressed="false">Realistic Fiction</button>
+              <button class="chip" type="button" data-value="adventure" title="Adventure" aria-pressed="false">Adventure</button>
+              <button class="chip" type="button" data-value="sports" title="Sports" aria-pressed="false">Sports</button>
+              <button class="chip" type="button" data-value="contemporary-ya" title="Contemporary YA" aria-pressed="false">Contemporary YA</button>
+              <button class="chip" type="button" data-value="paranormal" title="Paranormal" aria-pressed="false">Paranormal</button>
+              <button class="chip" type="button" data-value="lgbtqia" title="LGBTQIA+" aria-pressed="false">LGBTQIA+</button>
+              <button class="chip" type="button" data-value="humor" title="Humor" aria-pressed="false">Humour</button>
+              <button class="chip" type="button" data-value="fanfiction" title="Fanfiction" aria-pressed="false">Fanfiction</button>
+              <button class="chip" type="button" data-value="poetry" title="Poetry / Spoken Word" aria-pressed="false">Poetry</button>
             </div>
 
             <div class="actions">

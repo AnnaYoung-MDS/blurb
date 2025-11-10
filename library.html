@@ -86,62 +86,174 @@
         </div>
       </section>
 
-      <!-- 🏆 Awards pane (shown when clicking the award tab) -->
+      <!-- Awards -->
       <section id="awardsPane" hidden aria-labelledby="awardsHeading" role="region">
         <h2 id="awardsHeading" class="awards-heading">Awards &amp; Points</h2>
 
-        <!-- Total points summary -->
+        <!-- Total points -->
         <div class="points-card" aria-live="polite">
           <div class="points-value" id="pointsTotal">0</div>
           <div class="points-label">Total points earned</div>
         </div>
 
-        <!-- Upcoming awards (placeholders) -->
-        <div class="awards-upcoming">
-          <h3 class="awards-subtitle">Upcoming awards</h3>
-          <ul class="awards-list" role="list">
-            <!-- Placeholder Award 1 -->
-            <li class="award" data-award-id="award-pages-50">
-              <div class="award__icon" aria-hidden="true">🏅</div>
-              <div class="award__content">
-                <h4 class="award__title" id="award1-title">Page Turner I</h4>
-                <p class="award__desc" id="award1-desc">Read 50 pages</p>
-                <div class="award__progress">
-                  <progress id="award1-progress" value="20" max="50" aria-labelledby="award1-title" aria-describedby="award1-desc"></progress>
-                  <span class="award__progress-text"><span id="award1-current">20</span>/<span id="award1-max">50</span></span>
-                </div>
-              </div>
-            </li>
-
-            <!-- Placeholder Award 2 -->
-            <li class="award" data-award-id="award-days-7">
-              <div class="award__icon" aria-hidden="true">🎖️</div>
-              <div class="award__content">
-                <h4 class="award__title" id="award2-title">Streak Starter</h4>
-                <p class="award__desc" id="award2-desc">Read 7 days in a row</p>
-                <div class="award__progress">
-                  <progress id="award2-progress" value="3" max="7" aria-labelledby="award2-title" aria-describedby="award2-desc"></progress>
-                  <span class="award__progress-text"><span id="award2-current">3</span>/<span id="award2-max">7</span></span>
-                </div>
-              </div>
-            </li>
-
-            <!-- Placeholder Award 3 -->
-            <li class="award" data-award-id="award-books-3">
-              <div class="award__icon" aria-hidden="true">🏆</div>
-              <div class="award__content">
-                <h4 class="award__title" id="award3-title">Finisher</h4>
-                <p class="award__desc" id="award3-desc">Finish 3 books</p>
-                <div class="award__progress">
-                  <progress id="award3-progress" value="1" max="3" aria-labelledby="award3-title" aria-describedby="award3-desc"></progress>
-                  <span class="award__progress-text"><span id="award3-current">1</span>/<span id="award3-max">3</span></span>
-                </div>
-              </div>
-            </li>
-          </ul>
+       <!-- Reading Progress Awards -->
+    <li class="award" data-award-id="award-pages-100">
+      <div class="award__icon" aria-hidden="true">📖</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award1-title">Page Turner I</h4>
+        <p class="award__desc" id="award1-desc">Read 100 pages</p>
+        <div class="award__progress">
+          <progress id="award1-progress" value="60" max="100" aria-labelledby="award1-title" aria-describedby="award1-desc"></progress>
+          <span class="award__progress-text"><span id="award1-current">60</span>/<span id="award1-max">100</span></span>
         </div>
-      </section>
-      <!-- End Awards pane -->
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-pages-500">
+      <div class="award__icon" aria-hidden="true">📘</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award2-title">Page Turner II</h4>
+        <p class="award__desc" id="award2-desc">Read 500 pages</p>
+        <div class="award__progress">
+          <progress id="award2-progress" value="200" max="500" aria-labelledby="award2-title" aria-describedby="award2-desc"></progress>
+          <span class="award__progress-text"><span id="award2-current">200</span>/<span id="award2-max">500</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-pages-1000">
+      <div class="award__icon" aria-hidden="true">📗</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award3-title">Page Turner III</h4>
+        <p class="award__desc" id="award3-desc">Read 1,000 pages</p>
+        <div class="award__progress">
+          <progress id="award3-progress" value="400" max="1000" aria-labelledby="award3-title" aria-describedby="award3-desc"></progress>
+          <span class="award__progress-text"><span id="award3-current">400</span>/<span id="award3-max">1000</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-logs-20">
+      <div class="award__icon" aria-hidden="true">🔖</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award5-title">Bookmark Boss</h4>
+        <p class="award__desc" id="award5-desc">Log 20 reading sessions</p>
+        <div class="award__progress">
+          <progress id="award5-progress" value="8" max="20" aria-labelledby="award5-title" aria-describedby="award5-desc"></progress>
+          <span class="award__progress-text"><span id="award5-current">8</span>/<span id="award5-max">20</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-genre-3">
+      <div class="award__icon" aria-hidden="true">🌍</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award11-title">Genre Explorer</h4>
+        <p class="award__desc" id="award11-desc">Read 3 different genres</p>
+        <div class="award__progress">
+          <progress id="award11-progress" value="1" max="3" aria-labelledby="award11-title" aria-describedby="award11-desc"></progress>
+          <span class="award__progress-text"><span id="award11-current">1</span>/<span id="award11-max">3</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-fantasy-2">
+      <div class="award__icon" aria-hidden="true">🧙‍♂️</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award12-title">Fantasy Adventurer</h4>
+        <p class="award__desc" id="award12-desc">Finish 2 fantasy books</p>
+        <div class="award__progress">
+          <progress id="award12-progress" value="1" max="2" aria-labelledby="award12-title" aria-describedby="award12-desc"></progress>
+          <span class="award__progress-text"><span id="award12-current">1</span>/<span id="award12-max">2</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-romance-1">
+      <div class="award__icon" aria-hidden="true">💘</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award13-title">Romantic at Heart</h4>
+        <p class="award__desc" id="award13-desc">Finish a romance novel</p>
+        <div class="award__progress">
+          <progress id="award13-progress" value="0" max="1" aria-labelledby="award13-title" aria-describedby="award13-desc"></progress>
+          <span class="award__progress-text"><span id="award13-current">0</span>/<span id="award13-max">1</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-mystery-2">
+      <div class="award__icon" aria-hidden="true">🕵️</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award14-title">Mystery Solver</h4>
+        <p class="award__desc" id="award14-desc">Read 2 mystery or thriller books</p>
+        <div class="award__progress">
+          <progress id="award14-progress" value="0" max="2" aria-labelledby="award14-title" aria-describedby="award14-desc"></progress>
+          <span class="award__progress-text"><span id="award14-current">0</span>/<span id="award14-max">2</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-library-10">
+      <div class="award__icon" aria-hidden="true">📚</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award15-title">Library Hopper</h4>
+        <p class="award__desc" id="award15-desc">Add 10 books to your library</p>
+        <div class="award__progress">
+          <progress id="award15-progress" value="5" max="10" aria-labelledby="award15-title" aria-describedby="award15-desc"></progress>
+          <span class="award__progress-text"><span id="award15-current">5</span>/<span id="award15-max">10</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-books-1">
+      <div class="award__icon" aria-hidden="true">🏁</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award16-title">Finisher I</h4>
+        <p class="award__desc" id="award16-desc">Finish your first book</p>
+        <div class="award__progress">
+          <progress id="award16-progress" value="0" max="1" aria-labelledby="award16-title" aria-describedby="award16-desc"></progress>
+          <span class="award__progress-text"><span id="award16-current">0</span>/<span id="award16-max">1</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-books-5">
+      <div class="award__icon" aria-hidden="true">🏆</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award17-title">Finisher II</h4>
+        <p class="award__desc" id="award17-desc">Finish 5 books</p>
+        <div class="award__progress">
+          <progress id="award17-progress" value="1" max="5" aria-labelledby="award17-title" aria-describedby="award17-desc"></progress>
+          <span class="award__progress-text"><span id="award17-current">1</span>/<span id="award17-max">5</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-books-10">
+      <div class="award__icon" aria-hidden="true">👑</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award18-title">Finisher III</h4>
+        <p class="award__desc" id="award18-desc">Finish 10 books</p>
+        <div class="award__progress">
+          <progress id="award18-progress" value="3" max="10" aria-labelledby="award18-title" aria-describedby="award18-desc"></progress>
+          <span class="award__progress-text"><span id="award18-current">3</span>/<span id="award18-max">10</span></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="award" data-award-id="award-books-20">
+      <div class="award__icon" aria-hidden="true">🌟</div>
+      <div class="award__content">
+        <h4 class="award__title" id="award19-title">All-Star Reader</h4>
+        <p class="award__desc" id="award19-desc">Finish 20 books</p>
+        <div class="award__progress">
+          <progress id="award19-progress" value="5" max="20" aria-labelledby="award19-title" aria-describedby="award19-desc"></progress>
+          <span class="award__progress-text"><span id="award19-current">5</span>/<span id="award19-max">20</span></span>
+        </div>
+      </div>
+    </li>
+</div>
+      <!-- End Awards -->
 
       <!-- Scanner -->
       <div id="scanModal" class="modal" aria-hidden="true" role="dialog" aria-label="Scan barcode">
@@ -170,11 +282,10 @@
       </nav>
 
     </main>
-
-    <!-- Scripts -->
     <!-- QuaggaJS -->
     <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js" defer></script>
 
+    <!-- Scripts -->
     <script type="module" src="script.js"></script>
     <script type="module" src="avatar.js"></script>
     <script type="module" src="library.js"></script>

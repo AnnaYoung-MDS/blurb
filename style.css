@@ -1074,3 +1074,165 @@ progress::-moz-progress-bar{
   background: var(--primary) !important;
   flex-shrink: 0 !important;
 }
+
+/* ===============================
+   AUTH FORMS — POLISH PACK
+   (append at end of your CSS)
+   =============================== */
+
+/* Card & spacing */
+.auth-card {
+  border: 1px solid var(--stroke);
+  box-shadow: 0 24px 56px rgba(0,0,0,.10);
+  backdrop-filter: saturate(120%) contrast(102%);
+}
+
+/* Tabs */
+.tabs { gap: 10px; }
+.tab {
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .06s ease;
+}
+.tab:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,.08); }
+.tab:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(0,0,0,.05), 0 0 0 6px var(--primary); }
+.tab.is-active {
+  box-shadow: 0 2px 0 rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.10);
+}
+
+/* Field groups */
+.auth-card .form-row { margin: 16px 0; }
+.auth-card .form-row label {
+  font-weight: 900; letter-spacing: .2px; color: var(--text-dark);
+}
+
+/* Inputs */
+input[type="email"], input[type="password"], input[type="text"]{
+  border: 1.5px solid var(--stroke);
+  background: #fcfaf7;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+input::placeholder { color: #b4aba4; }
+input:focus{
+  background: #fff;
+  border-color: color-mix(in oklab, var(--primary) 32%, #ddd);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--primary) 20%, transparent),
+    0 8px 18px rgba(0,0,0,.08);
+}
+
+/* Optional error & success states (use by toggling .is-invalid / .is-valid) */
+input.is-invalid { border-color: #d93025; box-shadow: 0 0 0 3px rgba(217,48,37,.12); }
+input.is-valid   { border-color: #1a7f37; box-shadow: 0 0 0 3px rgba(26,127,55,.12); }
+
+/* Show/Hide buttons (right of password fields) */
+.input-with-btn { align-items: center; }
+.input-with-btn .ghost-btn{
+  border: 1.5px solid var(--stroke);
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 900;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  transition: transform .06s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+}
+.input-with-btn .ghost-btn:hover{
+  background: #fffdf8;
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
+  border-color: #efe8de;
+}
+.input-with-btn .ghost-btn:active{ transform: translateY(1px); }
+
+/* Password requirements + strength */
+.reqs { margin-top: 8px; gap: 8px; }
+.reqs li { transition: color .18s ease, opacity .18s ease; }
+.reqs li.ok { opacity: .95; }
+.strength{
+  height: 10px;
+  background: #efeae1;
+  border: 1px solid var(--stroke);
+}
+.strength-fill{
+  background: linear-gradient(90deg, color-mix(in oklab, var(--primary) 92%, #fff), var(--primary));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.4);
+}
+
+/* Status rows */
+.form-status, .hint { color: var(--muted); font-weight: 800; }
+
+/* Primary CTA */
+.primary-btn,
+#su-submit, #si-submit {
+  padding: 14px 16px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: 1px solid var(--primary);
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+  transition: transform .06s ease, box-shadow .2s ease, filter .18s ease;
+}
+.primary-btn:hover,
+#su-submit:hover, #si-submit:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 18px 36px rgba(0,0,0,.16);
+}
+.primary-btn:active,
+#su-submit:active, #si-submit:active { transform: translateY(1px); }
+.primary-btn:disabled,
+#su-submit:disabled, #si-submit:disabled {
+  filter: grayscale(.15) brightness(.96); cursor: not-allowed; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+/* “Already a member?” row */
+.auth-card .alt-action {
+  margin-top: 14px;
+  color: var(--muted);
+  font-weight: 800;
+}
+.auth-card .alt-action a { color: var(--bat); text-decoration: none; font-weight: 900; }
+.auth-card .alt-action a:hover { text-decoration: underline; }
+
+/* Responsive refinements */
+@media (max-width: 480px){
+  .auth-card { padding: 20px 16px; }
+  .tab { padding: 9px 14px; }
+  input[type="email"], input[type="password"], input[type="text"]{ padding: 12px 12px; }
+  .input-with-btn { gap: 6px; }
+}
+
+/* Continue buttons — Hobbies & Genres should look identical */
+#nextToGenres,
+#savePrefs {
+  /* match the Genres look */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;               /* or auto; use same value for both screens */
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #2f2f2f;
+  background: linear-gradient(180deg, #ffc7c7 0%, #ff9898 100%); /* Genres gradient */
+  box-shadow: 0 10px 18px rgba(0,0,0,.12);
+  transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease, filter .18s ease;
+}
+
+#nextToGenres:hover:not(.is-disabled):not(:disabled),
+#savePrefs:hover:not(.is-disabled):not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(0,0,0,.16);
+}
+
+#nextToGenres.is-disabled,
+#savePrefs.is-disabled,
+#nextToGenres:disabled,
+#savePrefs:disabled {
+  background: #eee !important;
+  color: #9aa0a6 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  opacity: .95;
+}

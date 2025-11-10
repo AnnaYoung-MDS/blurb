@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('avatarEmoji', selected.emoji);
     localStorage.setItem('isAuthed', 'true');
 
-    // go to the homepage
     window.location.href = 'homepage.html';
   });
 });

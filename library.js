@@ -34,9 +34,26 @@ function ensureBookId(b) {
 
 // ---------- awards config / storage ----------
 const AWARDS_DEF = [
-  { id: "award-pages-50",  metric: "pagesRead",     goal: 50, label: "50 Pages" },
-  { id: "award-days-7",    metric: "streakDays",    goal: 7,  label: "7-Day Reading Streak" },
-  { id: "award-books-3",   metric: "finishedBooks", goal: 3,  label: "Finished 3 Books" },
+  // 📚 Reading Progress
+  { id: "award-pages-100",  metric: "pagesRead",     goal: 100,  label: "Read 100 pages" },
+  { id: "award-pages-500",  metric: "pagesRead",     goal: 500,  label: "Read 500 pages" },
+  { id: "award-pages-1000", metric: "pagesRead",     goal: 1000, label: "Read 1,000 pages" },
+
+  // 🧩 Sessions / Library adds
+  { id: "award-logs-20",    metric: "sessionLogs",   goal: 20,   label: "Log 20 reading sessions" },
+  { id: "award-library-10", metric: "libraryAdds",   goal: 10,   label: "Add 10 books to your library" },
+
+  // 🧭 Variety & Discovery
+  { id: "award-genre-3",    metric: "genreVariety",  goal: 3,    label: "Read 3 different genres" },
+  { id: "award-fantasy-2",  metric: "fantasyBooks",  goal: 2,    label: "Finish 2 fantasy books" },
+  { id: "award-romance-1",  metric: "romanceBooks",  goal: 1,    label: "Finish a romance novel" },
+  { id: "award-mystery-2",  metric: "mysteryBooks",  goal: 2,    label: "Read 2 mystery or thriller books" },
+
+  // 🏅 Completion
+  { id: "award-books-1",    metric: "finishedBooks", goal: 1,    label: "Finish your first book" },
+  { id: "award-books-5",    metric: "finishedBooks", goal: 5,    label: "Finish 5 books" },
+  { id: "award-books-10",   metric: "finishedBooks", goal: 10,   label: "Finish 10 books" },
+  { id: "award-books-20",   metric: "finishedBooks", goal: 20,   label: "Finish 20 books" },
 ];
 
 function getEarnedAwards() {
@@ -83,6 +100,13 @@ function addBookToLocalLibrary(book) {
   triggerBookEmojiRain();
   if (typeof setActiveMainSeg === "function") setActiveMainSeg("books");
   else showBooksPane();
+
+  // Track libraryAdds metric
+  try {
+    const stats = window.BlurbAwards?.getStats?.() || {};
+    const nextAdds = Number(stats.libraryAdds || 0) + 1;
+    window.BlurbAwards?.setStats?.({ libraryAdds: nextAdds });
+  } catch {}
 }
 
 function renderBooks(books) {
@@ -131,7 +155,7 @@ function renderBooks(books) {
         </div>
 
         <div class="bookcard__actions">
-          <button class="btn-log" type="button" data-log-index="${idx}">Log Reading</button>
+          <button class="btn-log" type="button" data-book-id="${b.id || ""}">Log Reading</button>
           <div class="bookcard__progress" id="progress-${idx}">${percent}% Read</div>
         </div>
       </div>
@@ -140,10 +164,10 @@ function renderBooks(books) {
     grid.appendChild(card);
   });
 
-  $$("[data-log-index]", grid).forEach((btn) => {
+  $$("[data-book-id]", grid).forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      const i = Number(e.currentTarget.dataset.logIndex);
-      openLogModal(i);
+      const id = e.currentTarget.dataset.bookId;
+      if (id) openLogModalById(id);
     });
   });
 
@@ -571,7 +595,7 @@ function ensureLogModal() {
       </div>
       <p id="currentPageNote" style="margin:.5rem 0 1rem;color:#666;font-weight:800;"></p>
       <div class="actions" style="justify-content:flex-start;">
-        <button id="logConfirmBtn" class="btn">Log Book</button>
+        <button id="logConfirmBtn" class="btn" type="button">Log Book</button>
         <button class="link" type="button" data-close="true">Cancel</button>
       </div>
     </div>
@@ -593,14 +617,15 @@ function isLogModalOpen() {
   return m && m.getAttribute("aria-hidden") !== "true";
 }
 
-let _logBookIndex = null;
+let _logBookIndex = null; // kept for back-compat if something calls openLogModal(index)
+let _logBookId = null;
 
-function openLogModal(bookIndex) {
+function openLogModalById(bookId) {
   ensureLogModal();
 
-  _logBookIndex = bookIndex;
+  _logBookId = bookId;
   const books = getBooks();
-  const b = books[bookIndex];
+  const b = books.find((x) => x.id === bookId);
   if (!b) return;
 
   const modal = document.getElementById("logModal");
@@ -634,12 +659,22 @@ function openLogModal(bookIndex) {
   document.getElementById("logConfirmBtn").addEventListener("click", commitLogReading);
 }
 
+// Legacy entry point using index; routes to ID version
+function openLogModal(bookIndex) {
+  _logBookIndex = bookIndex;
+  const books = getBooks();
+  const b = books[bookIndex];
+  if (!b) return;
+  openLogModalById(b.id);
+}
+
 function closeLogModal() {
   const modal = document.getElementById("logModal");
   if (!modal) return;
   modal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
   _logBookIndex = null;
+  _logBookId = null;
 }
 
 function commitLogReading() {
@@ -650,7 +685,8 @@ function commitLogReading() {
   }
 
   const books = getBooks();
-  const b = books[_logBookIndex];
+  const idx = books.findIndex((x) => x.id === _logBookId);
+  const b = books[idx];
   if (!b) return;
 
   let total = isFiniteNum(b.pages) ? Number(b.pages) : null;
@@ -671,17 +707,12 @@ function commitLogReading() {
   saveBooks(books);
 
   const finishedNow = (next === total) && (prev < total);
-  _updateStatsAfterLog(amt, finishedNow);
+  const finishedCats = finishedNow ? (Array.isArray(b.categories) ? b.categories : []) : [];
+  _updateStatsAfterLog(amt, finishedNow, finishedCats);
 
-  const pct = clampPct((next / total) * 100);
-  const progressEl = document.getElementById(`progress-${_logBookIndex}`);
-  if (progressEl) progressEl.textContent = `${pct}% Read`;
-
-  const pagesEl = document.getElementById(`pages-${_logBookIndex}`);
-  if (pagesEl) {
-    pagesEl.textContent = `${total} Pages`;
-    pagesEl.hidden = false;
-  }
+  // Re-render the current pane so cards & buttons stay in sync
+  const isFavs = document.body.classList.contains("is-favorites-mode");
+  if (isFavs) showFavoritesPane(); else showBooksPane();
 
   triggerReadingConfetti();
   closeLogModal();
@@ -1144,12 +1175,11 @@ function triggerReadingConfetti(opts = {}) {
 }
 
 // ---------- award celebration ----------
-// ---------- award celebration (longer + hover to hold + click to dismiss) ----------
 function showAwardToast(title, subtitle = "", opts = {}) {
   const {
-    duration = 6000,      // how long to stay visible (ms)
-    stickyOnHover = true, // pause auto-hide while hovered/focused
-    closeOnClick = true   // allow manual dismiss on click
+    duration = 6000,
+    stickyOnHover = true,
+    closeOnClick = true
   } = opts;
 
   const id = "awardToast";
@@ -1176,26 +1206,23 @@ function showAwardToast(title, subtitle = "", opts = {}) {
     </div>
   `;
 
-  // clear any previous timer
   if (el._hideTimer) clearTimeout(el._hideTimer);
 
   const scheduleHide = () => {
-    if (duration === Infinity) return; // never autohide
+    if (duration === Infinity) return;
     el._hideTimer = setTimeout(() => el.remove(), duration);
   };
 
-  // optional: pause on hover/focus
   if (stickyOnHover) {
     el.onmouseenter = () => { if (el._hideTimer) clearTimeout(el._hideTimer); };
     el.onmouseleave = scheduleHide;
     el.onfocusin    = el.onmouseenter;
     el.onfocusout   = el.onmouseleave;
-    el.tabIndex = 0; // make focusable for keyboard users
+    el.tabIndex = 0;
   } else {
     el.onmouseenter = el.onmouseleave = el.onfocusin = el.onfocusout = null;
   }
 
-  // optional: click to dismiss
   if (closeOnClick) {
     el.onclick = () => { if (el._hideTimer) clearTimeout(el._hideTimer); el.remove(); };
   } else {
@@ -1205,9 +1232,7 @@ function showAwardToast(title, subtitle = "", opts = {}) {
   scheduleHide();
 }
 
-
 function celebrateAward(award) {
-  // Reuse your existing effects: just swap the emojis to trophies ✨
   triggerBookEmojiRain({
     emojis: ["🏆","🥇","🎖️","🌟","✨"],
     count: 80, fallMin: 4.5, fallMax: 8, drift: 100
@@ -1232,63 +1257,58 @@ function checkAwardsUnlocks(prevStats, nextStats) {
 
   if (newly.length) {
     setEarnedAwards(earned);
-    // celebrate the first (or loop if you want multiple toasts)
     celebrateAward(newly[0]);
-    // Optional: visually mark the card as “earned” if present
     newly.forEach(a => {
-      const card = document.getElementById(a.id);
+      const card = document.querySelector(`.award[data-award-id="${a.id}"]`);
       if (card) card.classList.add("is-earned");
     });
   }
 }
-
 
 // ---------- favorites & stats ----------
 function getFavoriteBooks() {
   return getBooks().filter((b) => b && b.fav === true);
 }
 
-// Keep _updateStatsAfterLog focused only on stats changes.
-function _updateStatsAfterLog(pagesAdded, finishedThisLog) {
-  // snapshot BEFORE changes so we can detect thresholds crossing
-  const prevStats = (window.BlurbAwards?.getStats?.() || {
-    pagesRead: 0, finishedBooks: 0, streakDays: 0, lastReadISO: null
-  });
+// Update stats after logging a session (pages + optional finished categories)
+function _updateStatsAfterLog(pagesAdded, finishedThisLog, finishedCategories = []) {
+  const prev = window.BlurbAwards?.getStats?.() || {
+    pagesRead: 0, finishedBooks: 0, sessionLogs: 0, libraryAdds: 0,
+    genresSeen: [], genreVariety: 0, fantasyBooks: 0, romanceBooks: 0, mysteryBooks: 0,
+    lastReadISO: null
+  };
 
-  // work on a copy
-  const stats = { ...prevStats };
+  const stats = { ...prev };
 
-  // 1) Points & pages
-  stats.pagesRead = Math.max(0, (Number(stats.pagesRead) || 0) + (Number(pagesAdded) || 0));
+  // Pages & session count
+  stats.pagesRead   = Math.max(0, (Number(stats.pagesRead) || 0) + (Number(pagesAdded) || 0));
+  stats.sessionLogs = (Number(stats.sessionLogs) || 0) + 1;
 
-  // 2) Finished books
+  // Finished books + genre tallies if finished this log
   if (finishedThisLog) {
     stats.finishedBooks = (Number(stats.finishedBooks) || 0) + 1;
+
+    const cats = (Array.isArray(finishedCategories) ? finishedCategories : [])
+      .map(String).map(s => s.toLowerCase());
+
+    // genre variety (unique genres encountered)
+    const seen = new Set(Array.isArray(stats.genresSeen) ? stats.genresSeen.map(String) : []);
+    cats.forEach(c => { if (c) seen.add(c); });
+    stats.genresSeen   = Array.from(seen);
+    stats.genreVariety = stats.genresSeen.length;
+
+    // simple heuristics by name
+    if (cats.some(c => /fantasy/.test(c)))   stats.fantasyBooks = (Number(stats.fantasyBooks) || 0) + 1;
+    if (cats.some(c => /romance/.test(c)))   stats.romanceBooks = (Number(stats.romanceBooks) || 0) + 1;
+    if (cats.some(c => /(mystery|thriller|crime)/.test(c))) stats.mysteryBooks = (Number(stats.mysteryBooks) || 0) + 1;
   }
 
-  // 3) Streak (unique reading days)
-  const today = new Date();
-  const tzSafe = (d) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const todayUTC = tzSafe(today);
-  const lastUTC  = stats.lastReadISO ? tzSafe(new Date(stats.lastReadISO)) : null;
+  // Timestamp of last read (could be useful later)
+  stats.lastReadISO = new Date().toISOString();
 
-  if (!lastUTC) {
-    stats.streakDays = 1;
-  } else {
-    const diffDays = Math.round((todayUTC - lastUTC) / 86400000);
-    if (diffDays === 1) stats.streakDays = (Number(stats.streakDays) || 0) + 1;
-    else if (diffDays > 1) stats.streakDays = 1; // missed a day
-    // diffDays === 0 → streak unchanged
-  }
-  stats.lastReadISO = today.toISOString();
-
-  // Persist
   window.BlurbAwards?.setStats?.(stats);
-
-  // Detect newly earned awards and celebrate
-  checkAwardsUnlocks(prevStats, stats);
+  checkAwardsUnlocks(prev, stats);
 }
-
 
 // ---------- awards pane (callable from anywhere) ----------
 function showAwardsPane() {
@@ -1308,37 +1328,7 @@ function showAwardsPane() {
 
 // ---------- boot ----------
 document.addEventListener("DOMContentLoaded", () => {
-  // Elements for Awards (IDs must exist in your HTML)
-  const pointsTotalEl = document.getElementById("pointsTotal");
-
-  const awardEls = [
-    {
-      id: "award-pages-50",
-      progressEl:  document.getElementById("award1-progress"),
-      currentEl:   document.getElementById("award1-current"),
-      maxEl:       document.getElementById("award1-max"),
-      goal: 50,
-      getCurrent: (stats) => stats.pagesRead
-    },
-    {
-      id: "award-days-7",
-      progressEl:  document.getElementById("award2-progress"),
-      currentEl:   document.getElementById("award2-current"),
-      maxEl:       document.getElementById("award2-max"),
-      goal: 7,
-      getCurrent: (stats) => stats.streakDays
-    },
-    {
-      id: "award-books-3",
-      progressEl:  document.getElementById("award3-progress"),
-      currentEl:   document.getElementById("award3-current"),
-      maxEl:       document.getElementById("award3-max"),
-      goal: 3,
-      getCurrent: (stats) => stats.finishedBooks
-    }
-  ];
-
-  // Simple stats engine
+  // Simple stats engine (points = pages)
   const PointsEngine = (() => {
     const POINTS_PER_PAGE = 1;
     function getUserStats() {
@@ -1347,11 +1337,21 @@ document.addEventListener("DOMContentLoaded", () => {
         return {
           pagesRead:     Number(saved.pagesRead)     || 0,
           finishedBooks: Number(saved.finishedBooks) || 0,
-          streakDays:    Number(saved.streakDays)    || 0,
+          sessionLogs:   Number(saved.sessionLogs)   || 0,
+          libraryAdds:   Number(saved.libraryAdds)   || 0,
+          genresSeen:    Array.isArray(saved.genresSeen) ? saved.genresSeen : [],
+          genreVariety:  Number(saved.genreVariety)  || (Array.isArray(saved.genresSeen) ? saved.genresSeen.length : 0),
+          fantasyBooks:  Number(saved.fantasyBooks)  || 0,
+          romanceBooks:  Number(saved.romanceBooks)  || 0,
+          mysteryBooks:  Number(saved.mysteryBooks)  || 0,
           lastReadISO:   saved.lastReadISO || null
         };
       }
-      const zero = { pagesRead: 0, finishedBooks: 0, streakDays: 0, lastReadISO: null };
+      const zero = {
+        pagesRead: 0, finishedBooks: 0, sessionLogs: 0, libraryAdds: 0,
+        genresSeen: [], genreVariety: 0, fantasyBooks: 0, romanceBooks: 0, mysteryBooks: 0,
+        lastReadISO: null
+      };
       localStorage.setItem("blurb:stats", JSON.stringify(zero));
       return zero;
     }
@@ -1361,18 +1361,31 @@ document.addEventListener("DOMContentLoaded", () => {
     return { getUserStats, computeTotalPoints };
   })();
 
+  const pointsTotalEl = document.getElementById("pointsTotal");
+
   function updateAwardsUI() {
     const stats = PointsEngine.getUserStats();
     const total = PointsEngine.computeTotalPoints(stats);
     if (pointsTotalEl) pointsTotalEl.textContent = String(total);
 
-    awardEls.forEach(({ progressEl, currentEl, maxEl, goal, getCurrent }) => {
-      if (!progressEl) return;
-      const current = Math.max(0, Math.min(goal, getCurrent(stats) ?? 0));
-      progressEl.max = goal;
-      progressEl.value = current;
-      if (currentEl) currentEl.textContent = String(current);
-      if (maxEl)     maxEl.textContent     = String(goal);
+    // Auto-bind to any <li class="award" data-award-id="...">
+    document.querySelectorAll("li.award[data-award-id]").forEach((li) => {
+      const id   = li.getAttribute("data-award-id");
+      const def  = AWARDS_DEF.find((a) => a.id === id);
+      const prog = li.querySelector(".award__progress progress");
+      const currentSpan = li.querySelector(".award__progress-text span:nth-child(1)");
+      const maxSpan     = li.querySelector(".award__progress-text span:nth-child(2)");
+      if (!def || !prog) return;
+
+      const goal = Number(def.goal) || Number(prog.getAttribute("max")) || 1;
+      const cur  = Math.max(0, Math.min(goal, Number(stats[def.metric] || 0)));
+
+      prog.max = goal;
+      prog.value = cur;
+      if (currentSpan) currentSpan.textContent = String(cur);
+      if (maxSpan)     maxSpan.textContent     = String(goal);
+
+      li.classList.toggle("is-earned", cur >= goal);
     });
   }
 
@@ -1381,14 +1394,12 @@ document.addEventListener("DOMContentLoaded", () => {
   window.BlurbAwards = {
     setStats(next) {
       const current = PointsEngine.getUserStats();
-      const merged = { ...current, ...next };
+      const merged  = { ...current, ...next };
       localStorage.setItem("blurb:stats", JSON.stringify(merged));
       const ap = document.getElementById("awardsPane");
       if (ap && ap.hidden === false) window.__blurbUpdateAwardsUI?.();
     },
-    getStats() {
-      return PointsEngine.getUserStats();
-    }
+    getStats() { return PointsEngine.getUserStats(); }
   };
 
   // initial paint
