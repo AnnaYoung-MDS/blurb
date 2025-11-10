@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* =========================================================
    THEME TOKENS
    ========================================================= */
@@ -97,7 +98,7 @@ main.library{ max-width: 520px; margin: 0 auto; padding: 16px 16px 120px; }
 
 .card, .auth-card {
   background: var(--card);
-  border: 1px solid var(--stroke);
+
   border-radius: var(--radius-xxl);
   box-shadow: 0 24px 60px rgba(0,0,0,.06);
   padding: 36px 28px 28px;
@@ -167,7 +168,7 @@ main.library{ max-width: 520px; margin: 0 auto; padding: 16px 16px 120px; }
 .input-with-btn { display: flex; gap: 8px; }
 input[type="email"], input[type="password"], input[type="text"] {
   width: 100%; padding: 12px 14px; border-radius: 16px;
-  border: 1px solid var(--stroke); background: #fff; color: var(--text-dark); font: inherit;
+
 }
 input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color: var(--primary); }
 .ghost-btn { border: 1px solid var(--stroke); background: #fff; color: var(--text-dark); padding: 0 12px; border-radius: 12px; font-weight: 900; cursor: pointer; }
@@ -182,9 +183,14 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 
 .reqs { list-style: none; padding: 8px 0 0; margin: 0; display: grid; gap: 6px; color: var(--muted); }
 .reqs li { display: flex; align-items: center; gap: 8px; }
-.reqs li::before { content: "✗"; color: #b34a4a; font-weight: 900; }
+/* --- Fixed Password Requirement Bullets --- */
+
+.reqs li.ok {
+  color: #1f6a48;
+}
+
 .reqs li.ok { color: #1f6a48; }
-.reqs li.ok::before { content: "✓"; color: #1f6a48; }
+
 
 
 /* =========================================================
@@ -285,7 +291,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 #pref-step-avatars .avatar-grid .chip.avatar-card {
   display: grid !important; place-items: center !important; padding: 0 !important; margin: 0 !important;
   width: 100% !important; aspect-ratio: 1 / 1 !important; border-radius: 9999px !important;
-  border: 2px solid var(--bat) !important; background: #fff !important; box-shadow: 0 2px 6px rgba(0,0,0,.06) !important;
+
   cursor: pointer !important; position: relative !important; line-height: 1 !important; justify-content: center !important;
   align-items: center !important; text-align: center !important;
 }
@@ -387,7 +393,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 .tab svg{ width: 34px; height: 34px; }
 .tab.is-active{
   background: linear-gradient(#fff, #fff) padding-box, linear-gradient(180deg, var(--primary), rgba(0,0,0,.05)) border-box;
-  border: 2px solid transparent; box-shadow: 0 8px 18px rgba(0,0,0,.12);
+
 }
 .tab.is-active svg{ color: var(--on-primary); fill: currentColor; }
 .tab.is-active{ color: var(--on-primary); }
@@ -415,7 +421,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 .ion--library,
 .fluent--people-team-20-filled{ filter: none; }
 
-/* (SVG DATA — unchanged) */
+/* (SVG DATA â€” unchanged) */
 .material-symbols--home-rounded {
   display: inline-block; width: 48px; height: 48px; background-repeat: no-repeat; background-size: 100% 100%;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19'/%3E%3C/svg%3E");
@@ -468,12 +474,40 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 
 .tag{ display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: var(--primary); color: var(--on-primary); font-weight: 800; font-size: .72rem; border: 1px solid var(--primary); }
 
-.book-tile .tag{
-  all: unset; display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px;
-  background: var(--primary, #ffcc00); border: 1px solid rgba(0,0,0,.15); color: var(--on-primary, #000);
-  font-size: 0.72rem; font-weight: 700; line-height: 1.1; white-space: nowrap; box-sizing: border-box;
+/* --- Final compact + consistent tag sizing --- */
+.book-tile .tag {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px;
+  height: 18px;              /* fixed compact height */
+  border-radius: 999px;
+  background: #fff;
+  color: #222;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
 }
-.book-tile .tag.faded{ background: #eee; border-color: rgba(0,0,0,.12); color: #555; opacity: .9; }
+
+.book-tile .tag::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+.book-tile .tag.faded {
+  opacity: 0.6;
+  background: transparent;
+  border-color: rgba(0,0,0,.1);
+}
+
 
 
 /* =========================================================
@@ -501,7 +535,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
   padding: 12px;
   border-radius: 16px;
   background: #fff;
-  border: 2px solid rgba(0,0,0,.08);
+
   box-shadow: 0 6px 20px rgba(0,0,0,.08);
 }
 .bookcard__cover{
@@ -510,7 +544,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
   border-radius: 12px;
   overflow: hidden;
   background: #f3f3f3;
-  border: 1px solid rgba(0,0,0,.08);
+
 }
 .bookcard__cover img,
 .bookcard__cover .cover-fallback{
@@ -549,7 +583,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
 .bookcard__chips .chip--yellow {
   background: var(--happy);
   color: var(--on-happy);
-  border: 1px solid var(--happy);
+
   box-shadow: 0 2px 4px rgba(0,0,0,.08);
 }
 
@@ -561,7 +595,7 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
   border-radius: 999px;
   background: var(--juice);
   color: #fff;
-  border: none;
+
   box-shadow: 0 6px 14px rgba(0,0,0,.12);
   cursor: pointer;
 }
@@ -571,6 +605,8 @@ input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.05); border-color
   font-weight: 800;
   font-size: .85rem;
 }
+
+
 
 
 /* =========================================================
@@ -618,7 +654,7 @@ body.is-add-mode #seg-add { background: var(--juice); box-shadow: 0 6px 16px rgb
 .segbar--sub .segbar__slider { background: var(--bat); outline: 2px solid #fff; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
 
 /* =========================================================
-   ICON SPRITES (library & add) — SVG DATA UNCHANGED
+   ICON SPRITES (library & add) â€” SVG DATA UNCHANGED
    ========================================================= */
 
 .iconoir--book,
@@ -794,7 +830,7 @@ body.modal-open { overflow: hidden; }
   padding: 16px;
   border-radius: 20px;
   background: #fff;
-  border: 1px solid var(--stroke);
+
   box-shadow: 0 8px 22px rgba(0,0,0,.10);
 }
 .points-value{
@@ -815,7 +851,7 @@ body.modal-open { overflow: hidden; }
 /* Upcoming awards list */
 .awards-upcoming{
   background: #fff;
-  border: 1px solid var(--stroke);
+
   border-radius: 20px;
   box-shadow: 0 8px 22px rgba(0,0,0,.08);
   padding: 14px;
@@ -839,7 +875,7 @@ body.modal-open { overflow: hidden; }
   grid-template-columns: 40px 1fr;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(0,0,0,.06);
+
   border-radius: 16px;
   background: #fafafa;
 }
@@ -888,11 +924,11 @@ progress{
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
-  border: none;
+
 }
 progress::-webkit-progress-bar{
   background: #f1f1f4;
-  border: 1px solid var(--stroke);
+
   border-radius: 999px;
   overflow: hidden;
 }
@@ -926,7 +962,7 @@ progress::-moz-progress-bar{
 .segbar.is-animating .seg.is-active{
   background: transparent !important;
   box-shadow: none !important;
-  /* color: inherit;  ← delete this */
+  /* color: inherit;  â† delete this */
 }
 
 
@@ -940,4 +976,101 @@ progress::-moz-progress-bar{
 .segbar.is-animating .seg.is-active .line-md--upload,
 .segbar.is-animating .seg.is-active .solar--keyboard-bold{
   filter: invert(1) brightness(2);
+}
+
+
+
+.book-rail .book-tile .tag{
+  padding: 1px 6px !important;
+  font-size: 0.68rem !important;
+  line-height: 1.1 !important;
+  height: auto !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  gap: 6px !important;
+}
+.book-rail .book-tile .tag::before{
+  width: 5px !important;
+  height: 5px !important;
+}
+.book-rail .book-tile .tag.faded{
+  opacity: .65 !important;
+}
+
+.password-requirements li::before {
+  font-family: system-ui, -apple-system, "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+
+/* --- Password Requirement List using Escaped Emojis (UTF-8 Safe) --- */
+.reqs {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.reqs li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+
+
+
+
+
+/* --- Password Requirement List using Pure CSS Dots (encoding-proof) --- */
+.reqs {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.reqs li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Password requirement icons: X by default, ✓ when .ok is present */
+.reqs { list-style: none; padding-left: 0; margin: 8px 0 0; }
+.reqs li { display: flex; align-items: center; gap: 8px; position: relative; padding-left: 0; color: var(--muted); }
+.reqs li::before { content: "✖"; font-weight: 900; display: inline-block; width: 1em; color: #d43a3a; }
+.reqs li.ok { color: #1a7f37; }
+.reqs li.ok::before { content: "✓"; color: #1a7f37; }
+
+/* Ensure no ticks/checkmarks on selected avatar cards */
+#pref-step-avatars .avatar-grid .chip.avatar-card.selected::after { content: none !important; }
+
+/* === Uniform tag size fix (applied globally and in book rail) === */
+.book-tile .tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 22px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #222 !important;
+
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.book-tile .tag::before {
+  content: "" !important;
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--primary) !important;
+  flex-shrink: 0 !important;
 }
